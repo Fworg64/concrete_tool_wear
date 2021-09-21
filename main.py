@@ -1,0 +1,87 @@
+import csv
+from scipy.io.wavfile import read
+import numpy as np
+import time
+
+from sklearn import svm
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import confusion_matrix
+
+import pdb
+
+print("Loading Audio from files...")
+# Load audio from audio files classifications.txt
+# filename, wear, spacing, start, end, notes
+keys = []
+data_files = []
+with open("./raw_audio/classifications.txt") as f:
+  reader = csv.reader(f, delimiter=',')
+  for idx,row in enumerate(reader):
+    if idx == 0:
+      keys = row
+      print("Opened classifications.txt file, found cols \n" + str(row))
+    else:
+      # load all columns from csv file
+      data_files.append({keys[index].strip() : row[index].strip() for index in range(len(row))})
+      # read audio file and sampling rate into dictionary
+      data_files[-1]["rate"], data_files[-1]["data"] = read("./raw_audio/"  + data_files[-1]["filename"])
+
+# Chop files into chunks
+data_vectors = []
+classifications = []
+sample_width_s = 0.1
+
+#pdb.set_trace()
+for f in data_files:
+  start_index = int(f["rate"] * float(f["start"]))
+  end_index   = int(f["rate"] * float(f["end"]))
+  points_per_sample = int(sample_width_s * f["rate"])
+  samples_in_file = int((end_index - start_index)/points_per_sample)
+  for index in range(samples_in_file):
+    audio_sample = f["data"][(start_index+index*points_per_sample):(start_index + (index+1)*points_per_sample)]
+    data_vectors.append([audio[0] for audio in audio_sample]) # drop spurious second channel
+    classifications.append(f["wear"])
+# Hyperparameters: Window width (sec), Audio prefiltering (?)
+
+classes2ints = {"New":0, "Moderate":1, "Worn":2}
+integer_classes = [classes2ints[classi] for classi in classifications]
+print("Assigning classes to integers as" + str(classes2ints))
+
+print(str(len(data_vectors)) + " Samples")
+#print(classifications)
+
+# Process chunks (FFT)
+# Use np real input FFT for fast computation
+data_procd = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors];
+
+# Sort into training and testing/validation (K-fold?)
+x_train, x_test, y_train, y_test = train_test_split(data_procd, integer_classes,
+                                               test_size=0.25)#, random_state=42069)
+
+# Print data statistics
+vals, counts = np.unique(y_train, return_index=False, 
+                         return_inverse=False, return_counts=True)
+print(f"train data has vals: {vals} with counts: {counts}")
+vals, counts = np.unique(y_test, return_index=False, 
+                         return_inverse=False, return_counts=True)
+print(f"test data has vals: {vals} with counts: {counts}")
+#pdb.set_trace()
+# Train SVM
+clf = svm.SVC()
+tic = time.perf_counter()
+clf.fit(x_train, y_train)
+toc = time.perf_counter()
+print(f"Fit the svm in {toc - tic:0.4f} seconds")
+print(f"Found {clf.classes_} for classes")
+
+# Display accuracy, scores, etc
+y_train_pred = clf.predict(x_train)
+y_test_pred  = clf.predict(x_test)
+train_cmat = confusion_matrix(y_test, y_test_pred, normalize="true")
+test_cmat  = confusion_matrix(y_train, y_train_pred, normalize="true")
+with np.printoptions(precision=3, suppress=True):
+  print("Training data confusion matrix: \n")
+  print(train_cmat)
+  print('\n')
+  print("Test data confusion matrix: \n")
+  print(test_cmat)

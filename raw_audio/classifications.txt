@@ -1,0 +1,25 @@
+filename, wear, spacing, start, end, notes
+1.5inModerate0_audio_out.wav, Moderate, 1.5in, 7.0, 13.0
+1.5inModerate1_audio_out.wav, Moderate, 1.5in, 11.0, 17.0
+1.5inModerate2_audio_out.wav, Moderate, 1.5in, 6.0, 12.0
+1.5inModerate3_audio_out.wav, Moderate, 1.5in, 11.0, 17.0
+1.5inNew0_audio_out.wav, New, 1.5in, 6.0, 12.0
+1.5inNew1_audio_out.wav, New, 1.5in, 5.0, 11.0
+1.5inNew2_audio_out.wav, New, 1.5in, 5.0, 11.0
+1.5inNew3_audio_out.wav, New, 1.5in, 8.0, 14.0
+1.5inWorn0_audio_out.wav, Worn, 1.5in, 5.0, 11.0
+1.5inWorn1_audio_out.wav, Worn, 1.5in, 4.0, 10.0
+1.5inWorn2_audio_out.wav, Worn, 1.5in, 9.0, 15.0
+1.5inWorn3_audio_out.wav, Worn, 1.5in, 5.0, 11.0
+2.0inModerate0_audio_out.wav, Moderate, 2.0in, 5.0, 11.0
+2.0inModerate1_audio_out.wav, Moderate, 2.0in, 5.0, 11.0
+2.0inModerate2_audio_out.wav, Moderate, 2.0in, 20.0, 26.0
+2.0inModerate3_audio_out.wav, Moderate, 2.0in, 6.0, 12.0
+2.0inNew0_audio_out.wav, New, 2.0in, 5.0, 11.0
+2.0inNew1_audio_out.wav, New, 2.0in, 14.0, 20.0
+2.0inNew2_audio_out.wav, New, 2.0in, 6.0, 12.0
+2.0inNew3_audio_out.wav, New, 2.0in, 5.0, 11.0
+2.0inWorn0_audio_out.wav, Worn, 2.0in, 11.0, 16.0, "other machine operation in background"
+2.0inWorn1_audio_out.wav, Worn, 2.0in, 33.0, 39.0
+2.0inWorn2_audio_out.wav, Worn, 2.0in, 6.0, 12.0
+2.0inWorn3_audio_out.wav, Worn, 2.0in, 6.0, 12.0, "nuisance banging"
