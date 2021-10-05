@@ -10,7 +10,7 @@ def load_audio_files_from_dir(classifications_path, sample_width_s, overlap_frac
         for idx, row in enumerate(reader):
             if idx == 0:
                 keys = row
-                print("Opened classifications.txt file, found cols \n" + str(row))
+                # print("Opened classifications.txt file, found cols \n" + str(row))
             else:
                 # load all columns from csv file
                 data_files.append({keys[index].strip(): row[index].strip() for index in range(len(row))})

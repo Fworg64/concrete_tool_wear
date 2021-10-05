@@ -4,6 +4,7 @@ import time
 from sklearn import svm
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
+from sklearn.metrics import f1_score
 
 from loader import load_audio_files_from_dir
 
@@ -12,51 +13,62 @@ import pdb
 print("Loading Audio from files...")
 # Load audio from audio files classifications.txt
 # filename, wear, spacing, start, end, notes
-sample_width_s = 0.1
-overlap_frac = 0.5
-data_vectors, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
 
-# Hyperparameters: Window width (sec), Audio prefiltering (?)
+widths = [0.05, 0.1, 0.2, 0.4, 0.8]
+scores = []
+for sample_width_s in widths:
+    overlap_frac = 0.5
+    data_vectors, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
 
-classes2ints = {"New":0, "Moderate":1, "Worn":2}
-integer_classes = [classes2ints[classi] for classi in classifications]
-print("Assigning classes to integers as" + str(classes2ints))
+    # Hyperparameters: Window width (sec), Audio prefiltering (?)
 
-print(str(len(data_vectors)) + " Samples")
-#print(classifications)
+    classes2ints = {"New":0, "Moderate":1, "Worn":2}
+    integer_classes = [classes2ints[classi] for classi in classifications]
+    # print("Assigning classes to integers as" + str(classes2ints))
 
-# Process chunks (FFT)
-# Use np real input FFT for fast computation
-data_procd = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors];
+    # print(str(len(data_vectors)) + " Samples")
+    #print(classifications)
 
-# Sort into training and testing/validation (K-fold?)
-x_train, x_test, y_train, y_test = train_test_split(data_procd, integer_classes,
-                                               test_size=0.25)#, random_state=42069)
+    # Process chunks (FFT)
+    # Use np real input FFT for fast computation
+    data_procd = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors];
 
-# Print data statistics
-vals, counts = np.unique(y_train, return_index=False, 
-                         return_inverse=False, return_counts=True)
-print(f"train data has vals: {vals} with counts: {counts}")
-vals, counts = np.unique(y_test, return_index=False, 
-                         return_inverse=False, return_counts=True)
-print(f"test data has vals: {vals} with counts: {counts}")
-#pdb.set_trace()
-# Train SVM
-clf = svm.SVC()
-tic = time.perf_counter()
-clf.fit(x_train, y_train)
-toc = time.perf_counter()
-print(f"Fit the svm in {toc - tic:0.4f} seconds")
-print(f"Found {clf.classes_} for classes")
+    # Sort into training and testing/validation (K-fold?)
+    x_train, x_test, y_train, y_test = train_test_split(data_procd, integer_classes,
+                                                   test_size=0.25, random_state=24000)
 
-# Display accuracy, scores, etc
-y_train_pred = clf.predict(x_train)
-y_test_pred  = clf.predict(x_test)
-train_cmat = confusion_matrix(y_test, y_test_pred, normalize="true")
-test_cmat  = confusion_matrix(y_train, y_train_pred, normalize="true")
-with np.printoptions(precision=3, suppress=True):
-  print("Training data confusion matrix: \n")
-  print(train_cmat)
-  print('\n')
-  print("Test data confusion matrix: \n")
-  print(test_cmat)
+    # Print data statistics
+    vals, counts = np.unique(y_train, return_index=False,
+                             return_inverse=False, return_counts=True)
+    # print(f"train data has vals: {vals} with counts: {counts}")
+    vals, counts = np.unique(y_test, return_index=False,
+                             return_inverse=False, return_counts=True)
+    # print(f"test data has vals: {vals} with counts: {counts}")
+    #pdb.set_trace()
+    # Train SVM
+    clf = svm.SVC()
+    tic = time.perf_counter()
+    clf.fit(x_train, y_train)
+    toc = time.perf_counter()
+    print(f"Fit the svm in {toc - tic:0.4f} seconds")
+    print(f"Found {clf.classes_} for classes")
+
+    # Display accuracy, scores, etc
+    y_train_pred = clf.predict(x_train)
+    y_test_pred  = clf.predict(x_test)
+    train_cmat = confusion_matrix(y_test, y_test_pred, normalize="true")
+    test_cmat  = confusion_matrix(y_train, y_train_pred, normalize="true")
+    clf_score = f1_score(y_test, y_test_pred, average='macro')
+    scores.append(clf_score)
+    # with np.printoptions(precision=3, suppress=True):
+    #     print("Training data confusion matrix: \n")
+    #     print(train_cmat)
+    #     print('\n')
+    #     print("Test data confusion matrix: \n")
+    #     print(test_cmat)
+    #     print(clf_score)
+
+max_score_index = np.argmax(scores)
+#tells us where/which part of the list gives us the most accurate/largest f1_score
+print(scores[max_score_index])
+print(widths[max_score_index])
