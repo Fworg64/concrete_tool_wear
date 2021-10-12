@@ -8,6 +8,9 @@ from sklearn.metrics import f1_score
 
 from loader import load_audio_files_from_dir
 
+import scipy
+from scipy.signal.windows import hamming
+
 import pdb
 
 print("Loading Audio from files...")
@@ -16,11 +19,23 @@ print("Loading Audio from files...")
 
 widths = [0.05, 0.1, 0.2, 0.4, 0.8]
 scores = []
+
 for sample_width_s in widths:
     overlap_frac = 0.5
-    data_vectors, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
+    data_vectors_pre, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
+    #get lenght of a data vector. Store in variable
+    # use that lenght to gerate a hamming window
+    #convert hamming window / data vector to same type (numpy v.s. list)
+    # elment wise multiple each data vector by the hamming window
+    #make sure data vectors is a list of lists
 
     # Hyperparameters: Window width (sec), Audio prefiltering (?)
+    m = len(data_vectors_pre[0])
+    my_window = hamming(m)
+    print(my_window)
+
+    data_vectors = (my_window * data_vectors_pre[:])
+    data_vectors = data_vectors.tolist()
 
     classes2ints = {"New":0, "Moderate":1, "Worn":2}
     integer_classes = [classes2ints[classi] for classi in classifications]
