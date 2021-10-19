@@ -5,7 +5,7 @@ from scipy.io.wavfile import read
 def load_audio_files_from_dir(classifications_path, sample_width_s, overlap_frac = 0):
     keys = []
     data_files = []
-    with open("./raw_audio/classifications.txt") as f:
+    with open(classifications_path) as f:
         reader = csv.reader(f, delimiter=',')
         for idx, row in enumerate(reader):
             if idx == 0:
@@ -20,7 +20,6 @@ def load_audio_files_from_dir(classifications_path, sample_width_s, overlap_frac
     # Chop files into chunks
     data_vectors = []
     classifications = []
-    sample_width_s = 0.1
 
     # pdb.set_trace()
     for f in data_files:

@@ -8,6 +8,10 @@ from sklearn.metrics import f1_score
 
 from loader import load_audio_files_from_dir
 
+import matplotlib.pyplot as plt
+import matplotlib.mlab as mlab
+import matplotlib.gridspec as gridspec
+
 import scipy
 from scipy.signal.windows import hamming
 
@@ -21,7 +25,7 @@ widths = [0.05, 0.1, 0.2, 0.4, 0.8]
 scores = []
 
 for sample_width_s in widths:
-    overlap_frac = 0.5
+    #overlap_frac = 0.5
     data_vectors_pre, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
     #get lenght of a data vector. Store in variable
     # use that lenght to gerate a hamming window
@@ -36,6 +40,26 @@ for sample_width_s in widths:
 
     data_vectors = (my_window * data_vectors_pre[:])
     data_vectors = data_vectors.tolist()
+    dt = sample_width_s / m
+    sample_time = np.arange(0, sample_width_s, dt)
+    fig, (ax0, ax1, ax2) = plt.subplots(3,1)
+    ax0.plot(sample_time, data_vectors_pre[0])
+    ax1.plot(sample_time, my_window)
+    ax2.plot(sample_time, data_vectors[0])
+
+    ax0.set_title('Raw Audio')
+    ax0.set_ylabel('Decibels')
+    ax0.set_xlabel('Time (s)')
+
+    ax1.set_title("Hamming Window Curve")
+    ax1.set_ylabel('Amplitube')
+    ax1.set_xlabel('Time (s)')
+
+    ax2.set_title('Audio With Window')
+    ax2.set_ylabel('Decibels')
+    ax2.set_xlabel('Time (s)')
+
+    plt.show(block=False)
 
     classes2ints = {"New":0, "Moderate":1, "Worn":2}
     integer_classes = [classes2ints[classi] for classi in classifications]
@@ -87,3 +111,6 @@ max_score_index = np.argmax(scores)
 #tells us where/which part of the list gives us the most accurate/largest f1_score
 print(scores[max_score_index])
 print(widths[max_score_index])
+
+input("Press enter to close.")
+plt.close(fig)
