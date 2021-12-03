@@ -23,6 +23,7 @@ print("Loading Audio from files...")
 
 widths = [0.05, 0.1, 0.2, 0.4, 0.8]
 scores = []
+test_cmats = []
 
 for sample_width_s in widths:
     #overlap_frac = 0.5
@@ -99,6 +100,7 @@ for sample_width_s in widths:
     test_cmat  = confusion_matrix(y_train, y_train_pred, normalize="true")
     clf_score = f1_score(y_test, y_test_pred, average='macro')
     scores.append(clf_score)
+    test_cmats.append(test_cmat)
     # with np.printoptions(precision=3, suppress=True):
     #     print("Training data confusion matrix: \n")
     #     print(train_cmat)
@@ -109,8 +111,10 @@ for sample_width_s in widths:
 
 max_score_index = np.argmax(scores)
 #tells us where/which part of the list gives us the most accurate/largest f1_score
+print("Best score, best width, Testing confusion matrix")
 print(scores[max_score_index])
 print(widths[max_score_index])
+print(test_cmats[max_score_index])
 
 input("Press enter to close.")
 plt.close(fig)
