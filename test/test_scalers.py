@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from custom_pipeline_elements import SampleScaler
+from custom_pipeline_elements import ChannelScaler, SampleScaler
 
 class ScalerTest(unittest.TestCase):
 
@@ -26,6 +26,17 @@ class ScalerTest(unittest.TestCase):
             self.assertAlmostEqual(np.mean(y), 0.0, 4, "transformed mean not zero for sample")
             self.assertAlmostEqual(np.std(y), 1.0, 4, "transformed standard deveation for sample")
 
+    def test_channel(self):
+        x = np.random.rand(5,24) # 5 samples of 16 dimensions
+        #print("oringinall data X", x)
+        scaler = ChannelScaler() 
+        scaler.fit(x)
+        z = scaler.transform(x)
+        #print(z)
+        for y in z:
+            self.assertAlmostEqual(np.mean(y), 0.0, 4, "transformed mean not zero for channels")
+            self.assertAlmostEqual(np.std(y), 1.0, 4, "transformed standard deveation for channels")
+        # reshape z by channel then checking means and std deviations 
 
 if __name__ == '__main__':
     unittest.main()
