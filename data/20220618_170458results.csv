@@ -1,4 +1,4 @@
-application,num_splits,num_samples,test_ratio,window_duration,window_overlap,window_shapestand1,fft,stand2,mean_score,std_dev
+application,num_splits,num_samples,test_ratio,window_duration,window_overlap,window_shape,stand1,fft,stand2,mean_score,std_dev
 cap mat.,100,670,0.25,0.1,0.25,boxcar,FeatureScaler1,FFT_Mag,FeatureScaler2,0.7480623297238409,0.06672915413898385
 cap mat.,100,670,0.25,0.1,0.25,boxcar,FeatureScaler1,FFT_Mag,ScaleControl2,0.7195818136737232,0.06050097882422144
 cap mat.,100,670,0.25,0.1,0.25,boxcar,ScaleControl1,FFT_Mag,FeatureScaler2,0.8208570578629817,0.05830772207357628
