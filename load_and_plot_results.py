@@ -40,7 +40,7 @@ for app_name, app_group in applications:
       x_plot_points.append(sum([c*b for c,b in zip(coeff, basis)]))
       c_plot_colors.append(norm_colors_by_index[coeff[0]])
       y_plot_points.append(row["mean_score"])
-      y_plot_errors.append(row["std_dev"])
+      y_plot_errors.append(row["std_dev"]/2.0) # plot is +/- this value
 
 
 
@@ -75,7 +75,7 @@ fig1, ax = plt.subplots()
 plt.bar(x=x_plot_points, height=y_plot_points, yerr = y_plot_errors, color=c_plot_colors, capsize=3, ecolor='gray')
 
 #labels the y axis
-yname = "F1 scores with error"
+yname = "F1 scores with 1 SD error bars"
 yfont = {'family': 'Sans','color':  'k','weight': 'normal','size': 15,}
 plt.ylabel(yname, fontdict=yfont, labelpad=15)
 #the title

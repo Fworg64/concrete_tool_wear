@@ -34,7 +34,7 @@ labelfont = {'family': 'Sans','color':  'k','weight': 'bold','size': 15,}
 
 #fig.text(0.5, 0.02,'window duration',fontdict=xfont, ha='center', va='center')
 #fig.text(0.06, 0.5, 'mean score',fontdict=yfont, ha='center', va='center', rotation='vertical')
-#fig.text(0.5, 0.96,'Performance vs. Window Width',fontdict=labelfont, ha='center',va='center')
+
 
 applications = ["cap mat.", "cap wear", "sg mat.", "sg wear"]
 
@@ -44,35 +44,28 @@ for idx, app in enumerate(applications):
   ax = plt.subplot(2,2, idx+1)
   exes = list(app_data[app].keys())
   wyes = [app_data[app][x][0] for x in exes]
-  errs = [app_data[app][x][1] for x in exes]
+  errs = [app_data[app][x][1]/2.0 for x in exes] # plot is +/- this value
   ax.bar(x=exes, height=wyes, yerr=errs, width=0.02, capsize=3, ecolor='gray')
   ax.set_title(app)
   ax.set_ylim([0,1]) 
-  ax.set_ylabel("F1 Score")
+  ax.set_ylabel("F1 Score with 1 SD error bars")
   if idx >= 2:
     ax.set_xlabel("Window duration")
 
-#ax = plt.subplot(2,2,1)
-#ax.bar(x1,y1,width=0.02,color ='b')
-#ax.set_title("cap mat")
-#ax.set_ylim([0, 1])
+fig.text(0.5, 0.96,'Performance vs. Window Width for Applications',fontdict=labelfont, ha='center',va='center')
 
-#ax = plt.subplot(2,2,2)
-#ax.bar(x2,y2,width=0.02,color ='r')
-#ax.set_title("cap wear")
-#ax.set_ylim([0, 1])
-
-#ax = plt.subplot(2,2,3)
-#ax.bar(x3,y3,width=0.02,color ='k')
-#ax.set_title("sg mat", y=-0.22)
-#ax.set_ylim([0, 1])
-
-#ax = plt.subplot(2,2,4)
-#ax.bar(x4,y4,width=0.02,color ='g')
-#ax.set_title("sg wear", y=-0.22)
-#ax.set_ylim([0, 1])
-
-
-
+# check signifigance of performance for each app
+print("Computing Z scores for each app...")
+for app in applications:
+  exes = list(app_data[app].keys())
+  wyes = [app_data[app][x][0] for x in exes]
+  errs = [app_data[app][x][1] for x in exes]
+  z_scores = {}
+  for idx, x in enumerate(exes[:-1]):
+    for idx2, x2 in enumerate(exes[idx+1:]):
+      z_scores[(x,x2)] = (wyes[idx]-wyes[idx2+idx+1]) / np.sqrt(errs[idx]*errs[idx]/100.0 +
+                                  errs[idx2+idx+1]*errs[idx2+idx+1]/100.0)
+  print(app)
+  [print(item) for item in z_scores.items()]
 
 plt.show(block=True)
