@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatch
 import numpy as np
 import pandas as pd
+import matplotlib.patches as mpatches
 import pdb
 
 sample_file_name = '20220620_094439results.csv' # Representative sample of results
@@ -96,6 +97,56 @@ for apps in range(4):
     pos.append(freqs * freq_spacing + apps * app_spacing + 1.5*norm_spacing)
 
 plt.xticks(pos, fft_methods, rotation=-45)
+
+#labeling  application
+
+#cap mat
+left, bottom, width, height = (-2, 0, 38, 0.05)
+rect=mpatches.Rectangle((left,bottom),width,height, 
+                        facecolor = 'white',
+                        edgecolor = 'black',
+                       linewidth=1,
+                       zorder=2,
+                       )
+plt.gca().add_patch(rect)
+# add text with text() function in matplotlib
+plt.text(8, 0.015,'cap mat',fontsize=16, color="black", weight="bold")
+
+#sg mat
+left, bottom, width, height = (48, 0, 38, 0.05)
+rect=mpatches.Rectangle((left,bottom),width,height, 
+                        facecolor = 'white',
+                        edgecolor = 'black',
+                       linewidth=1,
+                       zorder=2,
+                       )
+plt.gca().add_patch(rect)
+# add text with text() function in matplotlib
+plt.text(59, 0.015,'sg mat',fontsize=16, color="black", weight="bold")
+
+#cap wear
+left, bottom, width, height = (98, 0, 38, 0.05)
+rect=mpatches.Rectangle((left,bottom),width,height, 
+                        facecolor = 'white',
+                        edgecolor = 'black',
+                       linewidth=1,
+                       zorder=2,
+                       )
+plt.gca().add_patch(rect)
+# add text with text() function in matplotlib
+plt.text(107.5, 0.015,'cap wear',fontsize=16, color="black", weight="bold")
+
+#sg wear
+left, bottom, width, height = (148, 0, 38, 0.05)
+rect=mpatches.Rectangle((left,bottom),width,height, 
+                        facecolor = 'white',
+                        edgecolor = 'black',
+                       linewidth=1,
+                       zorder=2,
+                       )
+plt.gca().add_patch(rect)
+# add text with text() function in matplotlib
+plt.text(159, 0.015,'sg wear',fontsize=16, color="black", weight="bold")
 
 #legend of the colors of the bars
 colors = { 'None':'red','Before':'orange','Before + After':'blue','After':'green'}         
