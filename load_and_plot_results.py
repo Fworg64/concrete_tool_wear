@@ -4,8 +4,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.patches as mpatches
 import pdb
+import itertools 
 
-sample_file_name = '20220620_094439results.csv' # Representative sample of results
+
+sample_file_name = '20220620_094439results.csv' # Representative sample 0.25 test ratio, 0.2s window size
+#sample_file_name = '20220629_104255results.csv' # 0.5 test ratio, 0.2s window size
+#sample_file_name = '20220629_105237results.csv' # 0.75 test ratio, 0.2s window size
+
+print_z_scores = False
 
 # Group by application > frequency technique > normalization scheme
 
@@ -42,35 +48,20 @@ for app_name, app_group in applications:
       y_plot_points.append(row["mean_score"])
       y_plot_errors.append(row["std_dev"]/2.0) # plot is +/- this value
 
-
-
-#norm1 = data_bank["mean_score"][data_bank["fft"] == "FFT_Mag"]
-#norm2 = data_bank["mean_score"][data_bank["fft"] == "FFT_MagSq"]
-#norm3 = data_bank["mean_score"][data_bank["fft"] == "FFT_MagRt"]
-#norm4 = data_bank["mean_score"][data_bank["fft"] == "FreqControl"]
-#
-#norm5 = data_bank["std_dev"][data_bank["fft"] == "FFT_Mag"]
-#norm6 = data_bank["std_dev"][data_bank["fft"] == "FFT_MagSq"]
-#norm7 = data_bank["std_dev"][data_bank["fft"] == "FFT_MagRt"]
-#norm8 = data_bank["std_dev"][data_bank["fft"] == "FreqControl"]
-
-# generate groups of points
-#plot_points = np.array([6.*float(x) + 10.*int(x/4) for x in range(len(norm1))])
-
-#change window size of graph when displayed
+# Calculate Z scores for methods in application
+for app_name, app_group in applications:
+  print("Best methods are: \n{0}".format(app_group[app_group["mean_score"] == app_group["mean_score"].max()]))
+  if print_z_scores:
+    z_scores = {}
+    for combo in itertools.permutations(app_group.iterrows(),2): # do permutations for easy reading
+      z_scores[((combo[0][1]["stand1"], combo[0][1]["stand2"], combo[0][1]["fft"]),
+                (combo[1][1]["stand1"], combo[1][1]["stand2"], combo[1][1]["fft"]))] = (combo[0][1]["mean_score"] - combo[1][1]["mean_score"]) / np.sqrt(
+                                                                                        combo[0][1]["std_dev"]*combo[0][1]["std_dev"]/combo[0][1]["num_splits"] + 
+                                                                                        combo[1][1]["std_dev"]*combo[1][1]["std_dev"]/combo[1][1]["num_splits"] ) 
+    print("Z-scores for {0}".format(app_name))
+    [print(item) for item in z_scores.items()]
 
 fig1, ax = plt.subplots()
-
-#my_rects = {"Cap. Mat." : mpatch.Rectangle((4*freq_spacing, 10), 0, 10,
-#            "S.G. Mat." : mpatch.Rectangel((4*freq_spacing, 10), app_spacing, 10)}
-#for r in my_rects:
-#  ax.add_artist(my_rects[r])
-#  ax.annotate(r, (
-
-#plt.bar(plot_points+2, norm1.tolist(),yerr= norm5.tolist(), capsize = 3, ecolor = 'gray')
-#plt.bar(plot_points+1, norm2.tolist(), yerr= norm6.tolist(),  capsize = 3, ecolor = 'gray')
-#plt.bar(plot_points+3, norm3.tolist(),yerr= norm7.tolist(),  capsize = 3, ecolor = 'gray')
-#plt.bar(plot_points, norm4.tolist(),yerr= norm8.tolist(),  capsize = 3, ecolor = 'gray')
 
 plt.bar(x=x_plot_points, height=y_plot_points, yerr = y_plot_errors, color=c_plot_colors, capsize=3, ecolor='gray')
 
@@ -79,7 +70,8 @@ yname = "F1 scores with 1 SD error bars"
 yfont = {'family': 'Sans','color':  'k','weight': 'normal','size': 15,}
 plt.ylabel(yname, fontdict=yfont, labelpad=15)
 #the title
-titlename = "Performance of methods with 0.2s window width, 0.25 test ratio"
+titlename = "Performance of methods with {0}s window width, {1} test ratio".format(
+              data_bank.iloc[0]["window_duration"], data_bank.iloc[0]["test_ratio"])
 labelfont = {'family': 'Sans','color':  'k','weight': 'bold','size': 15,}
 plt.title(titlename,fontdict=labelfont, pad=25)
 #labels the x axis

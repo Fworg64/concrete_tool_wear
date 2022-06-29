@@ -1,0 +1,81 @@
+<<<Freq Domain>>> 0.2s window 0.5 overlap 0.5 test ratio
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/limestone_public_repo$ python3 print_conf_mats.py 
+Loading data...
+Data loaded in 5.23471474647522 sec; performing experiments
+Confusion matrix for ('cap mat.', ('FFT_Mag', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8e128>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8    0.2   ]
+ [0.0043 0.9957]]
+F1 score: 0.9242979242979242
+Confusion matrix for ('cap mat.', ('FFT_MagSq', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8d240>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8    0.2   ]
+ [0.0043 0.9957]]
+F1 score: 0.9242979242979242
+Confusion matrix for ('cap mat.', ('FFT_MagRt', <custom_pipeline_elements.FFTMag object at 0x7f2a23e242b0>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.6    0.4   ]
+ [0.0043 0.9957]]
+F1 score: 0.8525690021231422
+Confusion matrix for ('cap mat.', ('FreqControl', None), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.6667 0.3333]
+ [0.0129 0.9871]]
+F1 score: 0.8485958485958486
+Confusion matrix for ('cap wear', ('FFT_Mag', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8e128>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.9852 0.0013 0.0135]
+ [0.     0.8301 0.1699]
+ [0.     0.026  0.974 ]]
+F1 score: 0.9290904703279735
+Confusion matrix for ('cap wear', ('FFT_MagSq', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8d240>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.     0.     0.    ]
+ [0.0147 0.8281 0.1572]
+ [0.0052 0.0291 0.9657]]
+F1 score: 0.9283732383847108
+Confusion matrix for ('cap wear', ('FFT_MagRt', <custom_pipeline_elements.FFTMag object at 0x7f2a23e242b0>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.9987 0.0013 0.    ]
+ [0.     0.8615 0.1385]
+ [0.     0.0405 0.9595]]
+F1 score: 0.9389799046888636
+Confusion matrix for ('cap wear', ('FreqControl', None), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.     0.     0.    ]
+ [0.     0.9175 0.0825]
+ [0.     0.0198 0.9802]]
+F1 score: 0.9653191487733525
+Confusion matrix for ('sg mat.', ('FFT_Mag', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8e128>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.     0.    ]
+ [0.2131 0.7869]]
+F1 score: 0.5464275785376702
+Confusion matrix for ('sg mat.', ('FFT_MagSq', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8d240>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.     0.    ]
+ [0.2172 0.7828]]
+F1 score: 0.5435580717104135
+Confusion matrix for ('sg mat.', ('FFT_MagRt', <custom_pipeline_elements.FFTMag object at 0x7f2a23e242b0>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.    0.   ]
+ [0.209 0.791]]
+F1 score: 0.5493399049463124
+Confusion matrix for ('sg mat.', ('FreqControl', None), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[1.     0.    ]
+ [0.2172 0.7828]]
+F1 score: 0.5435580717104135
+Confusion matrix for ('sg wear', ('FFT_Mag', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8e128>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8603 0.1242 0.0155]
+ [0.0405 0.8873 0.0722]
+ [0.0093 0.0361 0.9545]]
+F1 score: 0.9004445884936837
+Confusion matrix for ('sg wear', ('FFT_MagSq', <custom_pipeline_elements.FFTMag object at 0x7f2a23f8d240>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8415 0.1297 0.0288]
+ [0.0733 0.8501 0.0766]
+ [0.0291 0.0536 0.9172]]
+F1 score: 0.869403304708785
+Confusion matrix for ('sg wear', ('FFT_MagRt', <custom_pipeline_elements.FFTMag object at 0x7f2a23e242b0>), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8448 0.1386 0.0166]
+ [0.0492 0.872  0.0788]
+ [0.0105 0.0396 0.9499]]
+F1 score: 0.8885402594734582
+Confusion matrix for ('sg wear', ('FreqControl', None), ('ScaleControl1', None), ('FeatureScaler2', StandardScaler()), ('rbf_svm', SVC(class_weight='balanced'))):
+[[0.8847 0.1153 0.    ]
+ [0.0142 0.9716 0.0142]
+ [0.0012 0.0023 0.9965]]
+F1 score: 0.9509009380608223
+ Done! Took 10.908946514129639 sec
+Indicies -> categories
+{0: 'Concrete', 1: 'Limestone'}
+{0: 'New', 1: 'Mod.', 2: 'Worn'}
+Have a nice day!
