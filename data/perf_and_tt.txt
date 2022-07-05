@@ -1,0 +1,72 @@
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ python3 load_and_plot_results.py 
+Best methods are: 
+  application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+6    cap mat.         100          495        0.75              0.2             0.5       boxcar  ScaleControl1  FFT_MagSq  FeatureScaler2    rbf_svm    0.831104  0.085499
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+28    cap wear         100         5442        0.75              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.949507  0.004079
+29    cap wear         100         5442        0.75              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.949507  0.004079
+30    cap wear         100         5442        0.75              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.949507  0.004079
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+42     sg mat.         100          502        0.75              0.2             0.5       boxcar  ScaleControl1  FFT_MagRt  FeatureScaler2    rbf_svm    0.534019  0.015505
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+60     sg wear         100         5347        0.75              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.934497  0.003663
+61     sg wear         100         5347        0.75              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.934497  0.003663
+62     sg wear         100         5347        0.75              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.934497  0.003663
+
+(python3:10849): Gtk-WARNING **: 15:48:46.396: Theme parsing error: gtk.css:1402:23: 'font-feature-settings' is not a valid property name
+
+(python3:10849): Gtk-WARNING **: 15:48:46.398: Theme parsing error: gtk.css:3244:25: 'font-feature-settings' is not a valid property name
+
+(python3:10849): Gtk-WARNING **: 15:48:46.399: Theme parsing error: gtk.css:3706:23: 'font-feature-settings' is not a valid property name
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ vim load_and_plot_results.py 
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ python3 load_and_plot_results.py 
+Best methods are: 
+  application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+6    cap mat.         100          495         0.5              0.2             0.5       boxcar  ScaleControl1  FFT_MagSq  FeatureScaler2    rbf_svm    0.902398  0.043758
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+28    cap wear         100         5442         0.5              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.965265  0.002842
+29    cap wear         100         5442         0.5              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.965265  0.002842
+30    cap wear         100         5442         0.5              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.965265  0.002842
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+42     sg mat.         100          502         0.5              0.2             0.5       boxcar  ScaleControl1  FFT_MagRt  FeatureScaler2    rbf_svm    0.535847  0.025727
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+60     sg wear         100         5347         0.5              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.947032  0.003785
+61     sg wear         100         5347         0.5              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.947032  0.003785
+62     sg wear         100         5347         0.5              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.947032  0.003785
+
+(python3:10886): Gtk-WARNING **: 15:50:10.739: Theme parsing error: gtk.css:1402:23: 'font-feature-settings' is not a valid property name
+
+(python3:10886): Gtk-WARNING **: 15:50:10.741: Theme parsing error: gtk.css:3244:25: 'font-feature-settings' is not a valid property name
+
+(python3:10886): Gtk-WARNING **: 15:50:10.742: Theme parsing error: gtk.css:3706:23: 'font-feature-settings' is not a valid property name
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ vim load_and_plot_results.py 
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ python3 load_and_plot_results.py 
+Best methods are: 
+  application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+6    cap mat.         100          495        0.25              0.2             0.5       boxcar  ScaleControl1  FFT_MagSq  FeatureScaler2    rbf_svm    0.924029  0.052965
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+28    cap wear         100         5442        0.25              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.970605  0.003478
+29    cap wear         100         5442        0.25              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.970605  0.003478
+30    cap wear         100         5442        0.25              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.970605  0.003478
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape         stand1        fft          stand2 classifier  mean_score   std_dev
+42     sg mat.         100          502        0.25              0.2             0.5       boxcar  ScaleControl1  FFT_MagRt  FeatureScaler2    rbf_svm    0.533077  0.044957
+Best methods are: 
+   application  num_splits  num_samples  test_ratio  window_duration  window_overlap window_shape          stand1          fft          stand2 classifier  mean_score   std_dev
+60     sg wear         100         5347        0.25              0.2             0.5       boxcar  FeatureScaler1  FreqControl  FeatureScaler2    rbf_svm    0.955214  0.004956
+61     sg wear         100         5347        0.25              0.2             0.5       boxcar  FeatureScaler1  FreqControl   ScaleControl2    rbf_svm    0.955214  0.004956
+62     sg wear         100         5347        0.25              0.2             0.5       boxcar   ScaleControl1  FreqControl  FeatureScaler2    rbf_svm    0.955214  0.004956
+
+(python3:10931): Gtk-WARNING **: 15:50:58.746: Theme parsing error: gtk.css:1402:23: 'font-feature-settings' is not a valid property name
+
+(python3:10931): Gtk-WARNING **: 15:50:58.749: Theme parsing error: gtk.css:3244:25: 'font-feature-settings' is not a valid property name
+
+(python3:10931): Gtk-WARNING **: 15:50:58.749: Theme parsing error: gtk.css:3706:23: 'font-feature-settings' is not a valid property name
+austinlocal@ME-MOBILE32:~/phd/m_classification_project/concrete_public_repo$ 
