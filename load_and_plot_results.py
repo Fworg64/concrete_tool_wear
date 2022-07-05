@@ -11,7 +11,7 @@ sample_file_name = '20220620_094439results.csv' # Representative sample 0.25 tes
 #sample_file_name = '20220629_104255results.csv' # 0.5 test ratio, 0.2s window size
 #sample_file_name = '20220629_105237results.csv' # 0.75 test ratio, 0.2s window size
 
-print_z_scores = False
+print_z_scores = True
 
 # Group by application > frequency technique > normalization scheme
 
