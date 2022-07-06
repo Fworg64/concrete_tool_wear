@@ -20,10 +20,10 @@ number_parallel_jobs = 5#40
 
 window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
-window_shape    = "boxcar" # from scipy.signal.windows
+window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 
 number_cross_validations = 10
-my_test_size = 0.75
+my_test_size = 0.5
 
 # Load data
 #cap_fs = 400 # Samples per second for each channel
@@ -45,7 +45,7 @@ raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt")
 audio_window = Windowizer(window_maker(window_shape, int(window_duration*audio_fs)), window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
-wear_classes2ints = {"New":0, "Mod.":1, "Worn":2}
+wear_classes2ints = {"New":0, "Moderate":1, "Worn":2}
 wear_ints2classes = {v: k for k,v in wear_classes2ints.items()}
 
 # Build preprocessing lists for pipeline
@@ -72,9 +72,7 @@ results = [["application", "num_splits", "num_samples", "test_ratio",
 #for name, (data_X, data_Y) in app_data_sets.items():
 name = "Concrete Tool Wear"
 data_X = windowed_audio_data
-data_Y = [wear_classes2ints[label["wear"]] for label in windowed_audio_labels] 
-
-pdb.set_trace()
+data_Y = [wear_classes2ints[label] for label in windowed_audio_labels] 
 
 for ft in freq_transforms:
  for sc1 in scalings1:
@@ -85,7 +83,7 @@ for ft in freq_transforms:
       my_pipeline = Pipeline([sc1, ft, sc2, cls])
       scores = cross_val_score(my_pipeline, data_X, data_Y, cv=cross_val,
                                 scoring='f1_macro', n_jobs=number_parallel_jobs)
-      results.append([name, str(number_cross_validations), str(data_X.shape[0]), str(my_test_size),
+      results.append([name, str(number_cross_validations), str(len(data_X)), str(my_test_size),
                       str(window_duration), str(window_overlap), window_shape,
                       my_pipeline.steps[0][0], my_pipeline.steps[1][0], my_pipeline.steps[2][0],
                       my_pipeline.steps[3][0], str(scores.mean()), str(scores.std())])

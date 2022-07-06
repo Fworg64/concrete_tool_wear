@@ -34,7 +34,8 @@ class Windowizer:
           break # stop the check, its already failed
       if label_check_fail:
         continue # skip this window location
-      glimpse = np.array(data[index:index+len(self.my_win)], dtype=float)
+      glimpse = np.reshape(np.array(
+                   data[index:index+len(self.my_win)], dtype=float), self.my_win.shape)
       windowed_datum = np.multiply(self.my_win, glimpse)
       if flatten:
         windowed_datum = windowed_datum.flatten('F')
