@@ -28,7 +28,7 @@ my_test_size = 0.5
 # Load data
 #cap_fs = 400 # Samples per second for each channel
 #lcm_fs = 537.6 # Samples per second for each channel
-audio_fs = 44000 # Samples per second for each channel
+audio_fs = 44100 # Samples per second for each channel
 
 print("Loading data...")
 this_time = time.time()
