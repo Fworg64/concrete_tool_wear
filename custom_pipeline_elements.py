@@ -1,5 +1,7 @@
 #function for the different scalers- chanel and sample
 import numpy as np
+import pywt
+
 import pdb
 
 class SampleScaler:
@@ -74,3 +76,23 @@ class FFTMag:
       z = np.abs(np.fft.rfft(z, axis=1)).reshape((z.shape[0], -1), order='F')
       z = self.recognized_powers[self.power](z)
       return z
+
+class WaveletDecomposition:
+  """
+  Class for computing wavelet coefficients using the specified wavelet basis
+  """
+  def __init__(self, num_channels=1, basis='db1', num_levels=1):
+    self.num_channels = num_channels
+    self.basis = basis
+    self.num_levels = num_levels
+
+  def fit(self, x, y=None, **fit_params):
+    return self
+ 
+  def transform(self, x):
+    coeff = pywt.wavedec(x, self.basis, level=self.num_levels)
+    out = np.array([c for coef in coeff for c in coef]) # readable way to flatten list
+    return out  
+
+
+
