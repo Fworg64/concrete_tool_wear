@@ -14,13 +14,13 @@ import numpy as np
 #from dataloading.loaders import load_strain_gauge_limestone, load_cap_limestone
 from loader import load_audio_files
 from windowizer import Windowizer, window_maker
-from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag
+from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
 number_parallel_jobs = 5#40
 
-window_duration = 0.2 # seconds
-window_overlap  = 0.5 # ratio of overlap [0,1)
-window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
+window_duration = 0.1 # seconds
+window_overlap  = 0.9 # ratio of overlap [0,1)
+window_shape    = "boxcar" #"boxcar" # from scipy.signal.windows
 
 number_cross_validations = 10
 my_test_size = 0.5
@@ -58,10 +58,18 @@ print("Data loaded in {0} sec; performing experiments".format(that_time - this_t
       end='', flush=True)
 this_time = time.time()
 # Build pipeline
-scalings1 = [("FeatureScaler1", StandardScaler()), ("ScaleControl1", None)]
-scalings2 = [("FeatureScaler2", StandardScaler()), ("ScaleControl2", None)]
-freq_transforms = [('FFT_Mag', FFTMag(4)), ('FFT_MagSq', FFTMag(4,"SQUARE")),
-                   ('FFT_MagRt', FFTMag(4,"SQRT")), ("FreqControl", None)]
+scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
+scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
+#freq_transforms = [('FFT_Mag', FFTMag(4)), ('FFT_MagSq', FFTMag(4,"SQUARE")),
+#                   ('FFT_MagRt', FFTMag(4,"SQRT")), ("FreqControl", None)]
+freq_transforms = [('db1, 5 level', WaveletDecomposition(num_levels=5)), 
+                   ('db2, 5 level', WaveletDecomposition(basis='db2', num_levels=5)), 
+                   ('db3, 5 level', WaveletDecomposition(basis='db3', num_levels=5)),
+                   ('db4, 5 level', WaveletDecomposition(basis='db4', num_levels=5)),
+                   ('biorg 1.3 5 level', WaveletDecomposition(basis='bior1.3', num_levels=5)),
+                   ('biorg 1.5 5 level', WaveletDecomposition(basis='bior1.5', num_levels=5)),
+                   ('biorg 2.2 5 level', WaveletDecomposition(basis='bior2.2', num_levels=5)),
+]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
 
 #pdb.set_trace()

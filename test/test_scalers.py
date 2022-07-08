@@ -110,24 +110,30 @@ class WaveletTest(unittest.TestCase):
 
   def testRowPreserved(self):
     # Make sure number of samples is preserved and so is data shape
-    data = [0, 1, 0, 1, 0, 2, 0, 3, 0, 4, 0]
+    num_samples = 50
+    num_dims = 100
+    data = np.random.rand(num_samples,num_dims)
     wavey = WaveletDecomposition()
     out = wavey.transform(data)
     self.assertEqual(np.array(data).shape[1:], out.shape[1:])
 
   def testRowPreserved2levels(self):
     # Make sure number of samples is preserved and so is data shape
-    data = [0, 1, 0, 1, 0, 2, 0, 3, 0, 4, 0]
+    num_samples = 50
+    num_dims = 100
+    data = np.random.rand(num_samples,num_dims)
     wavey = WaveletDecomposition(num_levels=2)
     out = wavey.transform(data)
-    self.assertEqual(np.array(data).shape[1:], out.shape[1:])
+    self.assertEqual(out.shape[0],num_samples)
 
   def testRowPreserved3levels(self):
     # Make sure number of samples is preserved and so is data shape
-    data = [0, 1, 0, 1, 0, 2, 0, 3, 0, 4, 0]
+    num_samples = 50
+    num_dims = 100
+    data = np.random.rand(num_samples,num_dims)
     wavey = WaveletDecomposition(num_levels=3)
     out = wavey.transform(data)
-    self.assertEqual(np.array(data).shape[1:], out.shape[1:])
+    self.assertEqual(out.shape[0],num_samples)
 
 if __name__ == '__main__':
     unittest.main()

@@ -90,8 +90,9 @@ class WaveletDecomposition:
     return self
  
   def transform(self, x):
-    coeff = pywt.wavedec(x, self.basis, level=self.num_levels)
-    out = np.array([c for coef in coeff for c in coef]) # readable way to flatten list
+    z = np.array(x)
+    coeff = pywt.wavedec(z, self.basis, level=self.num_levels)
+    out = np.column_stack(coeff)
     return out  
 
 
