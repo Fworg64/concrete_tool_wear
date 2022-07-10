@@ -1,6 +1,8 @@
 #function for the different scalers- chanel and sample
 import numpy as np
 import pywt
+#from stingray import lightcurve
+#from stingray.bispectrum import Bispectrum
 
 import pdb
 
@@ -81,10 +83,15 @@ class WaveletDecomposition:
   """
   Class for computing wavelet coefficients using the specified wavelet basis
   """
-  def __init__(self, num_channels=1, basis='db1', num_levels=1):
+  def __init__(self, num_channels=1, basis='db1', num_levels=1, 
+                     decomp_ratio=None, sample_size=None):
     self.num_channels = num_channels
     self.basis = basis
-    self.num_levels = num_levels
+    if decomp_ratio:
+      max_levels = pywt.dwt_max_level(sample_size, self.basis)
+      self.num_levels = int(decomp_ratio*max_levels)
+    else:
+      self.num_levels = num_levels
 
   def fit(self, x, y=None, **fit_params):
     return self
@@ -96,4 +103,21 @@ class WaveletDecomposition:
     return out  
 
 
+class BispectrumEstimation:
+  """
+  Class for computing bispectrum magnitude transformation
+  """
+  def __init__(self, sample_rate=44100):
+    self.sample_rate = sample_rate
+    pass
 
+  def fit(self, x, y=None, **fit_params):
+    return self
+
+  def transform(self, x):
+    # outer product of FFT of each row
+    
+    # offset, rolled up FFT of each row
+
+    # return product
+    pass
