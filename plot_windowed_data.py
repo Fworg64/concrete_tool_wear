@@ -28,12 +28,7 @@ test_cmats = []
 for sample_width_s in widths:
     #overlap_frac = 0.5
     data_vectors_pre, classifications = load_audio_files_from_dir("./raw_audio/classifications.txt", sample_width_s)#, overlap_frac)
-    #get lenght of a data vector. Store in variable
-    # use that lenght to gerate a hamming window
-    #convert hamming window / data vector to same type (numpy v.s. list)
-    # elment wise multiple each data vector by the hamming window
-    #make sure data vectors is a list of lists
-
+    
     # Hyperparameters: Window width (sec), Audio prefiltering (?)
     m = len(data_vectors_pre[0])
     my_window = hamming(m)
@@ -43,24 +38,43 @@ for sample_width_s in widths:
     data_vectors = data_vectors.tolist()
     dt = sample_width_s / m
     sample_time = np.arange(0, sample_width_s, dt)
-    fig, (ax0, ax1, ax2) = plt.subplots(3,1)
+    sample_freq = np.fft.rfftfreq(m, dt)
+
+    # Process chunks (FFT)
+    # Use np real input FFT for fast computation
+    data_procd = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors];
+    data_procd_unwindowed = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors_pre];
+
+    fig, (ax0, ax1, ax2, ax3, ax4) = plt.subplots(5,1)
     ax0.plot(sample_time, data_vectors_pre[0])
     ax1.plot(sample_time, my_window)
     ax2.plot(sample_time, data_vectors[0])
+    ax3.plot(sample_freq, data_procd_unwindowed[0])
+    ax4.plot(sample_freq, data_procd[0])
 
     ax0.set_title('Raw Audio')
     ax0.set_ylabel('Decibels')
     ax0.set_xlabel('Time (s)')
 
     ax1.set_title("Hamming Window Curve")
-    ax1.set_ylabel('Amplitube')
+    ax1.set_ylabel('Amplitude')
     ax1.set_xlabel('Time (s)')
 
     ax2.set_title('Audio With Window')
     ax2.set_ylabel('Decibels')
     ax2.set_xlabel('Time (s)')
 
+    ax3.set_title('FFT of un-windowed data')
+    ax3.set_ylabel('Spectra Magnitude')
+    ax3.set_xlabel('Frequency')
+
+    ax4.set_title('FFT of windowed data')
+    ax4.set_ylabel('Spectra Magnitude')
+    ax4.set_xlabel('Frequency')
+
     plt.show(block=False)
+
+    continue # skip classification
 
     classes2ints = {"New":0, "Moderate":1, "Worn":2}
     integer_classes = [classes2ints[classi] for classi in classifications]
@@ -68,10 +82,6 @@ for sample_width_s in widths:
 
     # print(str(len(data_vectors)) + " Samples")
     #print(classifications)
-
-    # Process chunks (FFT)
-    # Use np real input FFT for fast computation
-    data_procd = [np.abs(np.fft.rfft(data_vector)) for data_vector in data_vectors];
 
     # Sort into training and testing/validation (K-fold?)
     x_train, x_test, y_train, y_test = train_test_split(data_procd, integer_classes,
@@ -109,12 +119,12 @@ for sample_width_s in widths:
     #     print(test_cmat)
     #     print(clf_score)
 
-max_score_index = np.argmax(scores)
 #tells us where/which part of the list gives us the most accurate/largest f1_score
-print("Best score, best width, Testing confusion matrix")
-print(scores[max_score_index])
-print(widths[max_score_index])
-print(test_cmats[max_score_index])
+#max_score_index = np.argmax(scores)
+#print("Best score, best width, Testing confusion matrix")
+#print(scores[max_score_index])
+#print(widths[max_score_index])
+#print(test_cmats[max_score_index])
 
 input("Press enter to close.")
 plt.close(fig)
