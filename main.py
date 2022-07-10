@@ -17,13 +17,13 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 8#40
+number_parallel_jobs = 40
 
 window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 
-number_cross_validations = 8
+number_cross_validations = 100
 my_test_size = 0.5
 
 # Load data
@@ -39,10 +39,13 @@ downsample_factor = 3
 raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
 audio_fs = int(audio_fs/downsample_factor)
 
+window_len = int(window_duration*audio_fs)
+
 # Apply windowing
-audio_window = Windowizer(window_maker(window_shape, int(window_duration*audio_fs)), window_overlap)
+audio_window = Windowizer(window_maker(window_shape, window_len), window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
+
 wear_classes2ints = {"New":0, "Moderate":1, "Worn":2}
 wear_ints2classes = {v: k for k,v in wear_classes2ints.items()}
 
@@ -56,10 +59,21 @@ print("Data loaded in {0} sec; performing experiments".format(that_time - this_t
       end='', flush=True)
 this_time = time.time()
 # Build pipeline
-scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
+#scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms = [('FFT_Mag', FFTMag(1)), ('FFT_MagSq', FFTMag(1,"SQUARE")),
-                   ('FFT_MagRt', FFTMag(1,"SQRT")), ("FreqControl", None)]
+freq_transforms1 = [('FFT_Mag1', FFTMag(1)), 
+                    ('FFT_MagSq1', FFTMag(1,"SQUARE")),
+                    ('FFT_MagRt1', FFTMag(1,"SQRT")),
+                    ("FreqControl1", None)]
+freq_transforms2 = [('FFT_Mag', FFTMag(1)), 
+                    ('FFT_MagSq', FFTMag(1,"SQUARE")),
+                    ('FFT_MagRt', FFTMag(1,"SQRT")), 
+                    ("FreqControl2", None),
+                    ('Wavelet_db1', WaveletDecomposition(decomp_ratio=0.5, sample_size=window_len)),
+                    ('Wavelet_db2', WaveletDecomposition(basis='db2', decomp_ratio=0.5, sample_size=window_len)),
+                    ('Wavelet_db5', WaveletDecomposition(basis='db5', decomp_ratio=0.5, sample_size=window_len)),
+                    ('Wavelet_db11', WaveletDecomposition(basis='db11', decomp_ratio=0.5, sample_size=window_len))
+                    ]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
 
 
@@ -67,7 +81,7 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', 
 # Do experiment, record data to list
 results = [["application", "num_splits", "num_samples", "test_ratio",
             "window_duration", "window_overlap", "window_shape",
-            "stand1", "fft", "stand2", "classifier", "mean_score", "std_dev", "acc", "acc_dev"]]
+            "freq1", "freq2", "stand2", "classifier", "mean_score", "std_dev", "acc", "acc_dev"]]
 #for name, (data_X, data_Y) in app_data_sets.items():
 name = "Concrete Tool Wear"
 data_X = windowed_audio_data
@@ -75,13 +89,13 @@ data_Y = [wear_classes2ints[label] for label in windowed_audio_labels]
 
 scorings = ['f1_macro','accuracy']
 
-for ft in freq_transforms:
- for sc1 in scalings1:
+for ft1 in freq_transforms1:
+ for ft2 in freq_transforms2:
   for sc2 in scalings2:
    for cls in classifiers:
       cross_val = ShuffleSplit(n_splits=number_cross_validations, test_size=my_test_size, 
                                random_state = 711711)
-      my_pipeline = Pipeline([sc1, ft, sc2, cls])
+      my_pipeline = Pipeline([ft1, ft2, sc2, cls])
       scores = cross_validate(my_pipeline, data_X, data_Y, cv=cross_val,
                                 scoring=scorings, n_jobs=number_parallel_jobs)
       results.append([name, str(number_cross_validations), str(len(data_X)), str(my_test_size),
