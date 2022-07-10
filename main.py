@@ -20,11 +20,11 @@ from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, Wavele
 number_parallel_jobs = 8#40
 
 window_duration = 0.2 # seconds
-window_overlap  = 0.95 # ratio of overlap [0,1)
-window_shape    = "boxcar" #"boxcar" # from scipy.signal.windows
+window_overlap  = 0.5 # ratio of overlap [0,1)
+window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 
 number_cross_validations = 8
-my_test_size = 0.75
+my_test_size = 0.5
 
 # Load data
 #cap_fs = 400 # Samples per second for each channel
@@ -34,15 +34,12 @@ audio_fs = 44100 # Samples per second for each channel
 print("Loading data...")
 this_time = time.time()
 
-#raw_cap_data, cap_metadata = load_cap_limestone()
-#raw_lcm_data, lcm_metadata = load_strain_gauge_limestone()
-raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt")
+# Load and Downsample
+downsample_factor = 3
+raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
+audio_fs = int(audio_fs/downsample_factor)
 
 # Apply windowing
-#cap_window = Windowizer(window_maker(window_shape, int(window_duration*cap_fs)), window_overlap)
-#lcm_window = Windowizer(window_maker(window_shape, int(window_duration*lcm_fs)), window_overlap)
-#windowed_cap_data, windowed_cap_labels = cap_window.windowize(raw_cap_data, cap_metadata)
-#windowed_lcm_data, windowed_lcm_labels = lcm_window.windowize(raw_lcm_data, lcm_metadata)
 audio_window = Windowizer(window_maker(window_shape, int(window_duration*audio_fs)), window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
@@ -61,19 +58,10 @@ this_time = time.time()
 # Build pipeline
 scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-#freq_transforms = [('FFT_Mag', FFTMag(4)), ('FFT_MagSq', FFTMag(4,"SQUARE")),
-#                   ('FFT_MagRt', FFTMag(4,"SQRT")), ("FreqControl", None)]
-freq_transforms = [('db13, 1 level', WaveletDecomposition(basis='db13', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db14, 2 level', WaveletDecomposition(basis='db14', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db15, 3 level', WaveletDecomposition(basis='db15', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db16, 4 level', WaveletDecomposition(basis='db16', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db17, 5 level', WaveletDecomposition(basis='db17', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db18, 6 level', WaveletDecomposition(basis='db18', decomp_ratio=0.5, sample_size=window_duration*audio_fs)),
-                   ('db19, 7 level', WaveletDecomposition(basis='db19', decomp_ratio=0.5, sample_size=window_duration*audio_fs))
- ]
+freq_transforms = [('FFT_Mag', FFTMag(1)), ('FFT_MagSq', FFTMag(1,"SQUARE")),
+                   ('FFT_MagRt', FFTMag(1,"SQRT")), ("FreqControl", None)]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
 
-print("Wavelet max decomp for db1: {0}".format(pywt.dwt_max_level(window_duration*audio_fs, 'db1')))
 
 #pdb.set_trace()
 # Do experiment, record data to list

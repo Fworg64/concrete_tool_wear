@@ -74,8 +74,11 @@ class FFTMag:
 
     def transform(self, x):
       z = np.array(x)
-      z = z.reshape((z.shape[0],self.num_channels,-1), order='F')
-      z = np.abs(np.fft.rfft(z, axis=1)).reshape((z.shape[0], -1), order='F')
+      if self.num_channels != 1:
+        z = z.reshape((z.shape[0],self.num_channels,-1), order='F')
+        z = np.abs(np.fft.rfft(z, axis=1)).reshape((z.shape[0], -1), order='F')
+      else:
+        z = np.abs(np.fft.rfft(z))
       z = self.recognized_powers[self.power](z)
       return z
 
