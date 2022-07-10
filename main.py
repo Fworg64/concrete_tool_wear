@@ -35,7 +35,7 @@ print("Loading data...")
 this_time = time.time()
 
 # Load and Downsample
-downsample_factor = 3
+downsample_factor = 5
 raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
 audio_fs = int(audio_fs/downsample_factor)
 
@@ -61,18 +61,10 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [('FFT_Mag1', FFTMag(1)), 
-                    ('FFT_MagSq1', FFTMag(1,"SQUARE")),
-                    ('FFT_MagRt1', FFTMag(1,"SQRT")),
+freq_transforms1 = [('FFT_outer', FFTMag(1, "OUTER")), 
                     ("FreqControl1", None)]
-freq_transforms2 = [('FFT_Mag', FFTMag(1)), 
-                    ('FFT_MagSq', FFTMag(1,"SQUARE")),
-                    ('FFT_MagRt', FFTMag(1,"SQRT")), 
-                    ("FreqControl2", None),
-                    ('Wavelet_db1', WaveletDecomposition(decomp_ratio=0.5, sample_size=window_len)),
-                    ('Wavelet_db2', WaveletDecomposition(basis='db2', decomp_ratio=0.5, sample_size=window_len)),
-                    ('Wavelet_db5', WaveletDecomposition(basis='db5', decomp_ratio=0.5, sample_size=window_len)),
-                    ('Wavelet_db11', WaveletDecomposition(basis='db11', decomp_ratio=0.5, sample_size=window_len))
+freq_transforms2 = [
+                    ("FreqControl2", None)
                     ]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
 

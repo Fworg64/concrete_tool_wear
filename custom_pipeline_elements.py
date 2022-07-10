@@ -61,6 +61,7 @@ class FFTMag:
       self.power = power
       self.recognized_powers = {  "SQRT": lambda x : np.sqrt(x), 
                                 "SQUARE": lambda x : np.multiply(x,x),
+                                 "OUTER": lambda x : np.multiply(np.expand_dims(x, axis=1), np.expand_dims(x,axis=2)).reshape(x.shape[0],-1),
                                     None: lambda x : x}
       if power not in self.recognized_powers:
         raise ValueError("power param must be in %s" % (str(recognized_powers)))
