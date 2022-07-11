@@ -64,7 +64,7 @@ class FFTMag:
                                  "OUTER": lambda x : np.multiply(np.expand_dims(x, axis=1), np.expand_dims(x,axis=2)).reshape(x.shape[0],-1),
                                     None: lambda x : x}
       if power not in self.recognized_powers:
-        raise ValueError("power param must be in %s" % (str(recognized_powers)))
+        raise ValueError("power param must be in %s" % (str(self.recognized_powers)))
 
     def fit(self, x, y=None, **fit_params):
       dims = np.shape(x)

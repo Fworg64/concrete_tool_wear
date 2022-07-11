@@ -1,6 +1,8 @@
 import pdb
 import time
 import os
+import argparse
+import decimal
 
 from sklearn import svm
 from sklearn.model_selection import train_test_split, ShuffleSplit, cross_validate
@@ -19,12 +21,19 @@ from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, Wavele
 
 number_parallel_jobs = 30
 
-window_duration = 0.2 # seconds
-window_overlap  = 0.5 # ratio of overlap [0,1)
+#default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
+window_duration = 0.2 # seconds
+window_overlap  = 0.0 # ratio of overlap [0,1)
+#help words
+shape_options = "hamming,boxcar"
+duration_options = "0 - 10 second duration"
+overlap_options = "overlap ratio 0-1"
+#required inputs
+allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
-number_cross_validations = 30
-my_test_size = 0.5
+number_cross_validations = 1
+my_test_size = 0.75
 
 # Load data
 #cap_fs = 400 # Samples per second for each channel
@@ -41,8 +50,42 @@ audio_fs = int(audio_fs/downsample_factor)
 
 window_len = int(window_duration*audio_fs)
 
+#makeing command line argument for window shape
+parser = argparse.ArgumentParser()
+parser.add_argument("--window_shape", default=window_shape, type=str,
+  help=shape_options)
+#makeing command line argument for window duration
+parser.add_argument("--window_duration", default=window_duration, type=float,
+  help=duration_options)
+#makeing command line argument for window overlap
+parser.add_argument("--window_overlap", type=float, default=window_overlap,
+  help=overlap_options)
+
+args = parser.parse_args()
+#making the overlap between 0-1
+if args.window_overlap > 1:
+  raise Exception("Sorry, no numbers above 1")
+else:
+  pass
+if args.window_overlap < 0:
+  raise Exception("Sorry, no numbers below zero") 
+else:
+  pass
+#printing what the values are
+if args.window_shape:
+    print("window shape is",args.window_shape)
+if args.window_duration:
+    print("window duration is",args.window_duration)
+if args.window_overlap:
+    print("window overlap is",args.window_overlap)
+else: 
+      print("windows don't overlap")
+
+
+
 # Apply windowing
-audio_window = Windowizer(window_maker(window_shape, window_len), window_overlap)
+
+audio_window = Windowizer(window_maker(args.window_shape, int(args.window_duration*audio_fs)), args.window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
 
