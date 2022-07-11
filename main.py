@@ -1,6 +1,8 @@
 import pdb
 import time
 import os
+import argparse
+import decimal
 
 from sklearn import svm
 from sklearn.model_selection import train_test_split, ShuffleSplit, cross_val_score
@@ -18,12 +20,19 @@ from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag
 
 number_parallel_jobs = 5#40
 
-window_duration = 0.2 # seconds
-window_overlap  = 0.5 # ratio of overlap [0,1)
+#default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
+window_duration = 0.2 # seconds
+window_overlap  = 0.0 # ratio of overlap [0,1)
+#help words
+shape_options = "hamming,boxcar"
+duration_options = "0 - 10 second duration"
+overlap_options = "overlap ratio 0-1"
+#required inputs
+allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
-number_cross_validations = 10
-my_test_size = 0.5
+number_cross_validations = 1
+my_test_size = 0.75
 
 # Load data
 #cap_fs = 400 # Samples per second for each channel
@@ -37,12 +46,45 @@ this_time = time.time()
 #raw_lcm_data, lcm_metadata = load_strain_gauge_limestone()
 raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt")
 
+#makeing command line argument for window shape
+parser = argparse.ArgumentParser()
+parser.add_argument("--window_shape", default=window_shape, type=str,
+  help=shape_options)
+#makeing command line argument for window duration
+parser.add_argument("--window_duration", default=window_duration, type=float,
+  help=duration_options)
+#makeing command line argument for window overlap
+parser.add_argument("--window_overlap", type=float, default=window_overlap,
+  help=overlap_options)
+
+args = parser.parse_args()
+#making the overlap between 0-1
+if args.window_overlap > 1:
+  raise Exception("Sorry, no numbers above 1")
+else:
+  pass
+if args.window_overlap < 0:
+  raise Exception("Sorry, no numbers below zero") 
+else:
+  pass
+#printing what the values are
+if args.window_shape:
+    print("window shape is",args.window_shape)
+if args.window_duration:
+    print("window duration is",args.window_duration)
+if args.window_overlap:
+    print("window overlap is",args.window_overlap)
+else: 
+      print("windows don't overlap")
+
+
+
 # Apply windowing
 #cap_window = Windowizer(window_maker(window_shape, int(window_duration*cap_fs)), window_overlap)
 #lcm_window = Windowizer(window_maker(window_shape, int(window_duration*lcm_fs)), window_overlap)
 #windowed_cap_data, windowed_cap_labels = cap_window.windowize(raw_cap_data, cap_metadata)
 #windowed_lcm_data, windowed_lcm_labels = lcm_window.windowize(raw_lcm_data, lcm_metadata)
-audio_window = Windowizer(window_maker(window_shape, int(window_duration*audio_fs)), window_overlap)
+audio_window = Windowizer(window_maker(args.window_shape, int(args.window_duration*audio_fs)), args.window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
 wear_classes2ints = {"New":0, "Moderate":1, "Worn":2}
@@ -58,8 +100,8 @@ print("Data loaded in {0} sec; performing experiments".format(that_time - this_t
       end='', flush=True)
 this_time = time.time()
 # Build pipeline
-scalings1 = [("FeatureScaler1", StandardScaler()), ("ScaleControl1", None)]
-scalings2 = [("FeatureScaler2", StandardScaler()), ("ScaleControl2", None)]
+scalings1 = [("FeatureScaler1", StandardScaler()), ("ScaleControl1", None),("SampleScaler1",SampleScaler())]
+scalings2 = [("FeatureScaler2", StandardScaler()), ("ScaleControl2", None),("SampleScaler2",SampleScaler())]
 freq_transforms = [('FFT_Mag', FFTMag(4)), ('FFT_MagSq', FFTMag(4,"SQUARE")),
                    ('FFT_MagRt', FFTMag(4,"SQRT")), ("FreqControl", None)]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
