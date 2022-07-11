@@ -6,6 +6,8 @@ import decimal
 
 from sklearn import svm
 from sklearn.neural_network import MLPClassifier
+from sklearn.neighbors import KNeighborsClassifier
+
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.gaussian_process.kernels import RBF
 
@@ -28,7 +30,7 @@ number_parallel_jobs = 3
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 window_duration = 0.2 # seconds
-window_overlap  = 0.0 # ratio of overlap [0,1)
+window_overlap  = 0.5 # ratio of overlap [0,1)
 #help words
 shape_options = "hamming,boxcar"
 duration_options = "0 - 10 second duration"
@@ -119,8 +121,9 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
                                     2*windowed_audio_data[0].shape[0], 
                                     windowed_audio_data[0].shape[0]), 
                 max_iter=300, random_state=43, verbose=False)),
-                ('GPC_iso', GaussianProcessClassifier(kernel=RBF([1.0]))),
-                ('GPC_aniso', GaussianProcessClassifier(kernel=RBF(276 * [1.0])))
+               ('K15N', KNeighborsClassifier(n_neighbors=15, p=3))
+#                ('GPC_iso', GaussianProcessClassifier(kernel=RBF([1.0]))),
+#                ('GPC_aniso', GaussianProcessClassifier(kernel=RBF(276 * [1.0])))
 ] 
 
 
