@@ -1,7 +1,7 @@
 import csv
 from scipy.io.wavfile import read
 
-def load_audio_files(classifications_path):
+def load_audio_files(classifications_path, integer_downsample=1):
     """
     Load audio files from classifications file
     Return long list of data with equal length list of labels
@@ -28,7 +28,7 @@ def load_audio_files(classifications_path):
     for f in data_files:
         start_index = int(f["rate"] * float(f["start"]))
         end_index = int(f["rate"] * float(f["end"]))
-        audio_sample = f["data"][start_index:end_index]
+        audio_sample = f["data"][start_index:end_index:integer_downsample]
         data_vectors.extend([audio[0] for audio in audio_sample])  # drop spurious second channel
         classifications.extend([f["wear"] for audio in audio_sample])
     return data_vectors, classifications
