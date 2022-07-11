@@ -17,13 +17,13 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 40
+number_parallel_jobs = 30
 
 window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 
-number_cross_validations = 100
+number_cross_validations = 30
 my_test_size = 0.5
 
 # Load data
@@ -35,7 +35,7 @@ print("Loading data...")
 this_time = time.time()
 
 # Load and Downsample
-downsample_factor = 5
+downsample_factor = 16
 raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
 audio_fs = int(audio_fs/downsample_factor)
 
