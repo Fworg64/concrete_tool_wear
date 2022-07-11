@@ -3,6 +3,10 @@ import time
 import os
 
 from sklearn import svm
+from sklearn.neural_network import MLPClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier
+from sklearn.gaussian_process.kernels import RBF
+
 from sklearn.model_selection import train_test_split, ShuffleSplit, cross_validate
 from sklearn.metrics import confusion_matrix, f1_score, make_scorer
 
@@ -17,13 +21,13 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 30
+number_parallel_jobs = 3
 
 window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
 
-number_cross_validations = 30
+number_cross_validations = 3
 my_test_size = 0.5
 
 # Load data
@@ -61,12 +65,20 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [('FFT_outer', FFTMag(1, "OUTER")), 
-                    ("FreqControl1", None)]
+freq_transforms1 = [('FFT_Mag', FFTMag(1))] #,("FreqControl1", None)]
 freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
-classifiers = [('rbf_svm', svm.SVC(class_weight='balanced'))] #, ('linear_svm', svm.LinearSVC(class_weight='balanced', max_iter=10000))]
+classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
+               ('MLPClass', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+                                    2*windowed_audio_data[0].shape[0], 
+                                    windowed_audio_data[0].shape[0]), 
+                max_iter=300, random_state=43, verbose=False)),
+                ('GPC_iso', GaussianProcessClassifier(kernel=RBF([1.0]))),
+                ('GPC_aniso', GaussianProcessClassifier(kernel=RBF(276 * [1.0])))
+] 
 
 
 #pdb.set_trace()
