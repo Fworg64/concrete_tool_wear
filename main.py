@@ -8,9 +8,6 @@ from sklearn import svm
 from sklearn.neural_network import MLPClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
-from sklearn.gaussian_process import GaussianProcessClassifier
-from sklearn.gaussian_process.kernels import RBF
-
 from sklearn.model_selection import train_test_split, ShuffleSplit, cross_validate
 from sklearn.metrics import confusion_matrix, f1_score, make_scorer
 
@@ -25,7 +22,7 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 3
+number_parallel_jobs = 40
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -38,7 +35,7 @@ overlap_options = "overlap ratio 0-1"
 #required inputs
 allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
-number_cross_validations = 3
+number_cross_validations = 100
 my_test_size = 0.5
 
 # Load data
@@ -115,15 +112,25 @@ freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
-               ('MLPClass', MLPClassifier(solver='lbfgs', activation='relu', 
+               ('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
+                                    windowed_audio_data[0].shape[0]), 
+                max_iter=300, random_state=43, verbose=False)),
+               ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+                                    2*windowed_audio_data[0].shape[0])
+                max_iter=300, random_state=43, verbose=False)),
+               ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
                 alpha=1e-10, tol=1e-8,
                 hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
                                     2*windowed_audio_data[0].shape[0], 
                                     windowed_audio_data[0].shape[0]), 
                 max_iter=300, random_state=43, verbose=False)),
-               ('K15N', KNeighborsClassifier(n_neighbors=15, p=3))
-#                ('GPC_iso', GaussianProcessClassifier(kernel=RBF([1.0]))),
-#                ('GPC_aniso', GaussianProcessClassifier(kernel=RBF(276 * [1.0])))
+               ('K5N', KNeighborsClassifier(n_neighbors=5)),
+               ('K15N', KNeighborsClassifier(n_neighbors=15)),
+               ('K25N', KNeighborsClassifier(n_neighbors=25))
 ] 
 
 
