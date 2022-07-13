@@ -4,6 +4,8 @@ import pywt
 #from stingray import lightcurve
 #from stingray.bispectrum import Bispectrum
 
+from scipy import signal
+
 import pdb
 
 class SampleScaler:
@@ -148,3 +150,17 @@ class BispectrumEstimation:
 
     # return product
     pass
+
+class SignalDecimate:
+  """
+  Class for downsampling factors higher than 13
+  """
+  def __init__(self,downsample_factor):
+     self.downsample_factor = downsample_factor
+
+  def fit(self, x):
+     return self
+
+  def transform(self,x):
+     z = signal.decimate(x,self.downsample_factor)
+     return z
