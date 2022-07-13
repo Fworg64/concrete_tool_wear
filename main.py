@@ -22,7 +22,7 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 40
+number_parallel_jobs = 8
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -35,7 +35,7 @@ overlap_options = "overlap ratio 0-1"
 #required inputs
 allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
-number_cross_validations = 100
+number_cross_validations = 8
 my_test_size = 0.5
 
 # Load data
@@ -111,26 +111,26 @@ freq_transforms1 = [('FFT_Mag', FFTMag(1))] #,("FreqControl1", None)]
 freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
-classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
+classifiers = [#('rbf_svm', svm.SVC(class_weight='balanced')),
                ('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
                 alpha=1e-10, tol=1e-8,
                 hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
                                     windowed_audio_data[0].shape[0]), 
-                max_iter=300, random_state=43, verbose=False)),
+                max_iter=300, verbose=False)),
                ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
                 alpha=1e-10, tol=1e-8,
                 hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
-                                    2*windowed_audio_data[0].shape[0])
-                max_iter=300, random_state=43, verbose=False)),
+                                    2*windowed_audio_data[0].shape[0]),
+                max_iter=300, verbose=False)),
                ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
                 alpha=1e-10, tol=1e-8,
                 hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
                                     2*windowed_audio_data[0].shape[0], 
                                     windowed_audio_data[0].shape[0]), 
-                max_iter=300, random_state=43, verbose=False)),
-               ('K5N', KNeighborsClassifier(n_neighbors=5)),
-               ('K15N', KNeighborsClassifier(n_neighbors=15)),
-               ('K25N', KNeighborsClassifier(n_neighbors=25))
+                max_iter=300, verbose=False))
+               #('K5N', KNeighborsClassifier(n_neighbors=5)),
+               #('K15N', KNeighborsClassifier(n_neighbors=15)),
+               #('K25N', KNeighborsClassifier(n_neighbors=25))
 ] 
 
 
