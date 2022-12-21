@@ -5,6 +5,12 @@ import os
 import numpy as np
 import pdb
 
+# Set figures
+fontsize = 32
+plt.rc('font', size=fontsize, family='sans')
+plt.rc('axes', titlesize=fontsize)
+plt.rc('axes', labelsize=fontsize)
+plt.rc('legend', fontsize=0.5*fontsize)
 
 #load in all data and put into one dataframe
 #path to data files
@@ -37,6 +43,8 @@ labelfont = {'family': 'Sans','color':  'k','weight': 'bold','size': 15,}
 
 
 applications = ["cap mat.", "cap wear", "sg mat.", "sg wear"]
+application_names = {"cap mat.":"Cap mat.", "cap wear":"Cap wear",
+                     "sg mat.":"SG mat.", "sg wear":"SG wear"}
 
 fig, ax = plt.subplots(2,2, sharex='col')
 
@@ -45,14 +53,16 @@ for idx, app in enumerate(applications):
   exes = list(app_data[app].keys())
   wyes = [app_data[app][x][0] for x in exes]
   errs = [app_data[app][x][1]/2.0 for x in exes] # plot is +/- this value
-  ax.bar(x=exes, height=wyes, yerr=errs, width=0.02, capsize=3, ecolor='gray')
-  ax.set_title(app)
+  ax.bar(color="darkturquoise", x=exes, height=wyes, yerr=errs, width=0.02, capsize=12, ecolor='goldenrod', 
+         error_kw={"elinewidth":3, "capthick":3})
+  ax.set_title(application_names[app])
   ax.set_ylim([0,1]) 
-  ax.set_ylabel("F1 Score with 1 SD error bars")
+  ax.set_ylabel("F1 Score $\pm$ 1 SD")
   if idx >= 2:
     ax.set_xlabel("Window duration")
 
-fig.text(0.5, 0.96,'Performance vs. Window Width for Applications',fontdict=labelfont, ha='center',va='center')
+fig.text(0.5, 0.97,'Performance vs. Window Width for Applications',
+         fontdict=labelfont, ha='center',va='center', size=32)
 
 # check signifigance of performance for each app
 print("Computing Z scores for each app...")
