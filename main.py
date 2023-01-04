@@ -16,6 +16,7 @@ from sklearn.pipeline import Pipeline
 
 import pywt
 import numpy as np
+import pandas as pd
 
 #from dataloading.loaders import load_strain_gauge_limestone, load_cap_limestone
 from loader import load_audio_files
@@ -23,6 +24,8 @@ from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
 number_parallel_jobs = 8
+
+## Start Simulation Parameters ##
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -35,12 +38,12 @@ overlap_options = "overlap ratio 0-1"
 #required inputs
 allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
+
+# Machine learning sampling hyperparameters #
 number_cross_validations = 8
 my_test_size = 0.5
 
 # Load data
-#cap_fs = 400 # Samples per second for each channel
-#lcm_fs = 537.6 # Samples per second for each channel
 audio_fs = 44100 # Samples per second for each channel
 
 print("Loading data...")
@@ -53,19 +56,22 @@ audio_fs = int(audio_fs/downsample_factor)
 
 window_len = int(window_duration*audio_fs)
 
-#makeing command line argument for window shape
+## End default parameters and loading ##
+## Allow command line overrides of parameters ##
+
+# Making command line argument for window shape
 parser = argparse.ArgumentParser()
 parser.add_argument("--window_shape", default=window_shape, type=str,
   help=shape_options)
-#makeing command line argument for window duration
+# Making command line argument for window duration
 parser.add_argument("--window_duration", default=window_duration, type=float,
   help=duration_options)
-#makeing command line argument for window overlap
+# Making command line argument for window overlap
 parser.add_argument("--window_overlap", type=float, default=window_overlap,
   help=overlap_options)
 
 args = parser.parse_args()
-#making the overlap between 0-1
+# Making the overlap between 0-1
 if args.window_overlap > 1:
   raise Exception("Sorry, no numbers above 1")
 else:
@@ -74,7 +80,7 @@ if args.window_overlap < 0:
   raise Exception("Sorry, no numbers below zero") 
 else:
   pass
-#printing what the values are
+# Printing what the values are
 if args.window_shape:
     print("window shape is",args.window_shape)
 if args.window_duration:
@@ -84,7 +90,7 @@ if args.window_overlap:
 else: 
       print("windows don't overlap")
 
-
+## End parameters ##
 
 # Apply windowing
 
@@ -111,24 +117,24 @@ freq_transforms1 = [('FFT_Mag', FFTMag(1))] #,("FreqControl1", None)]
 freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
-classifiers = [#('rbf_svm', svm.SVC(class_weight='balanced')),
-               ('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
-                alpha=1e-10, tol=1e-8,
-                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0]), 
-                max_iter=300, verbose=False)),
-               ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
-                alpha=1e-10, tol=1e-8,
-                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
-                                    2*windowed_audio_data[0].shape[0]),
-                max_iter=300, verbose=False)),
-               ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
-                alpha=1e-10, tol=1e-8,
-                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
-                                    2*windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0]), 
-                max_iter=300, verbose=False))
-               #('K5N', KNeighborsClassifier(n_neighbors=5)),
+classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
+               #('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
+               # alpha=1e-10, tol=1e-8,
+               # hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
+               #                     windowed_audio_data[0].shape[0]), 
+               # max_iter=300, verbose=False)),
+               #('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
+               # alpha=1e-10, tol=1e-8,
+               # hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+               #                     2*windowed_audio_data[0].shape[0]),
+               # max_iter=300, verbose=False)),
+               #('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
+               # alpha=1e-10, tol=1e-8,
+               # hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+               #                     2*windowed_audio_data[0].shape[0], 
+               #                     windowed_audio_data[0].shape[0]), 
+               # max_iter=300, verbose=False))
+               ('K5N', KNeighborsClassifier(n_neighbors=5)),
                #('K15N', KNeighborsClassifier(n_neighbors=15)),
                #('K25N', KNeighborsClassifier(n_neighbors=25))
 ] 
@@ -139,6 +145,12 @@ classifiers = [#('rbf_svm', svm.SVC(class_weight='balanced')),
 results = [["application", "num_splits", "num_samples", "test_ratio",
             "window_duration", "window_overlap", "window_shape",
             "freq1", "freq2", "stand2", "classifier", "mean_score", "std_dev", "acc", "acc_dev"]]
+# Save results from experiments to dataframe
+
+results_frame = pd.DataFrame(columns=results[0][0:1], dtype=str) 
+
+
+
 #for name, (data_X, data_Y) in app_data_sets.items():
 name = "Concrete Tool Wear"
 data_X = windowed_audio_data
@@ -155,6 +167,13 @@ for ft1 in freq_transforms1:
       my_pipeline = Pipeline([ft1, ft2, sc2, cls])
       scores = cross_validate(my_pipeline, data_X, data_Y, cv=cross_val,
                                 scoring=scorings, n_jobs=number_parallel_jobs)
+
+      # Concat to data frame
+      experiment_data_dict = {results[0][0] : [name],
+                              results[0][1] : [str(number_cross_validations)]}
+      experiment_data_frame = pd.DataFrame(data=experiment_data_dict, dtype=str)
+      results_frame = pd.concat([results_frame, experiment_data_frame], ignore_index=True)
+
       results.append([name, str(number_cross_validations), str(len(data_X)), str(my_test_size),
                       str(window_duration), str(window_overlap), window_shape,
                       my_pipeline.steps[0][0], my_pipeline.steps[1][0], my_pipeline.steps[2][0],
@@ -169,7 +188,12 @@ print(" Done! Took {0} sec; Saving data...".format(that_time - this_time))
 for result in results:
   print(result)
 
-#pdb.set_trace()
+print("results frame")
+print(results_frame)
+
+pdb.set_trace()
+
+## Write file
 os.makedirs('./out', exist_ok=True)
 timestr = time.strftime("%Y%m%d_%H%M%Sresults.csv")
 with open('./out/' + timestr, 'w') as f:
