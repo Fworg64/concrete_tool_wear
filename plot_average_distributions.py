@@ -4,6 +4,7 @@ import pdb
 
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib
 
 from loader import load_audio_files
 from windowizer import Windowizer, window_maker
@@ -65,24 +66,44 @@ for val, name in zip([new_td, mod_td, worn_td, new_fd, mod_fd, worn_fd], names):
 # Plot distribution vectors for each wear level for frequency
 exes = list(range(len(avgs[names[0]])))
 freqs = list(range(len(avgs[names[3]])))
+freq_vals = np.linspace(0, audio_fs/2, len(avgs[names[3]]))
+time_vals = np.linspace(0, window_duration, len(avgs[names[0]]))
 
-#pdb.set_trace()
+# Set figure sizes
+fontsize = 18
+plt.rc('font', size=fontsize, family='sans')
+plt.rc('axes', titlesize=fontsize)
+plt.rc('axes', labelsize=fontsize)
+plt.rc('legend', fontsize=fontsize)
 
 fig, axs = plt.subplots(3,2)
-axs[0][0].plot(avgs[names[0]])
-axs[1][0].plot(avgs[names[1]])
-axs[2][0].plot(avgs[names[2]])
 
-axs[0][1].plot(freqs, avgs[names[3]])
-axs[0][1].fill_between(freqs, avgs[names[3]]+devs[names[3]], avgs[names[3]]-devs[names[3]], alpha=0.5)
+for index in range(3):
+  # Plot time domain
+  axs[index][0].fill_between(time_vals, 
+    avgs[names[index]] + devs[names[index]],
+    avgs[names[index]] - devs[names[index]],
+    alpha=0.5, color='tab:purple')
+  axs[index][0].plot(time_vals, avgs[names[index]], color='tab:green')
+  axs[index][0].set_title(names[index])
+  axs[index][0].set_ylim(-6000, 6000)
+  axs[index][0].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
+  axs[index][0].set_xlabel("Time (s)")
+  axs[index][0].set_ylabel("Amplitude")
 
-axs[1][1].plot(freqs, avgs[names[4]])
-axs[1][1].fill_between(freqs, avgs[names[4]]+devs[names[4]], avgs[names[4]]-devs[names[4]], alpha=0.5)
+  # Plot freq domain
+  axs[index][1].fill_between(freq_vals,
+    avgs[names[index+3]] + devs[names[index+3]],
+    avgs[names[index+3]] - devs[names[index+3]],
+    alpha=0.5, color='tab:purple')
+  axs[index][1].plot(freq_vals, avgs[names[index+3]], color='tab:green')
+  axs[index][1].set_title(names[index+3])
+  axs[index][1].set_ylim(0, 3.5e5)
+  axs[index][1].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
+  axs[index][1].set_xlabel("Freq. (Hz)")
+  axs[index][1].set_ylabel("Spectra Magnitude")
 
-axs[2][1].plot(freqs, avgs[names[5]])
-axs[2][1].fill_between(freqs, avgs[names[5]]+devs[names[5]], avgs[names[5]]-devs[names[5]], alpha=0.5)
 plt.show(block=False)
-
 input("Press Enter to close...")
 
 # Plot distribution vectors for each wear level for time domain
