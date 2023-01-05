@@ -23,14 +23,6 @@ from loader import load_audio_files
 from windowizer import Windowizer, window_maker
 from custom_pipeline_elements import SampleScaler, ChannelScaler, FFTMag, WaveletDecomposition
 
-number_parallel_jobs = 8
-
-## Start Simulation Parameters ##
-
-#default values
-window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.2 # seconds
-window_overlap  = 0.5 # ratio of overlap [0,1)
 #help words
 shape_options = "hamming,boxcar"
 duration_options = "0 - 10 second duration"
@@ -38,6 +30,17 @@ overlap_options = "overlap ratio 0-1"
 #required inputs
 allowed_overlap = [x/100 for x in range(0, 101, 5)]
 
+## Start Simulation Parameters ##
+
+name = "Concrete Tool Wear"
+
+# Computation parameter
+number_parallel_jobs = 8
+
+#default values
+window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
+window_duration = 0.2 # seconds
+window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
 number_cross_validations = 8
@@ -45,20 +48,18 @@ my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
+downsample_factor = 16
 
 print("Loading data...")
 this_time = time.time()
 
-# Load and Downsample
-downsample_factor = 16
-raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
+# Load and Downsample, adjust audio_fs
 audio_fs = int(audio_fs/downsample_factor)
+raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
 
 window_len = int(window_duration*audio_fs)
 
-## End default parameters and loading ##
-## Allow command line overrides of parameters ##
-
+## Allow command line overrides
 # Making command line argument for window shape
 parser = argparse.ArgumentParser()
 parser.add_argument("--window_shape", default=window_shape, type=str,
@@ -90,6 +91,21 @@ if args.window_overlap:
 else: 
       print("windows don't overlap")
 
+## End command line parsing
+
+static_params_pairs = [ ("name", [name]),
+                        ("window_shape", [window_shape]),
+                        ("window_duration", [window_duration]),
+                        ("window_overlap", [window_overlap]),
+                        ("window_len", [window_len]),
+                        ("number_parallel_jobs", [number_parallel_jobs]),
+                        ("number_cross_validations", [number_cross_validations]),
+                        ("my_test_size", [my_test_size]),
+                        ("audio_fs", [audio_fs]),
+                        ("downsample_factor", [downsample_factor]),
+                        ("load_date_time", [this_time]) ] # All parameters 
+
+## End default parameters and loading ##
 ## End parameters ##
 
 # Apply windowing
@@ -113,7 +129,10 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [('FFT_Mag', FFTMag(1))] #,("FreqControl1", None)]
+freq_transforms1 = [('FFT_Rt', FFTMag(1, power='SQRT')),
+                    ('FFT_Mag', FFTMag(1)),
+                    ('FFT_Sq', FFTMag(1, "SQUARE")),
+                    ("FreqControl1", None)]
 freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
@@ -135,24 +154,16 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
                #                     windowed_audio_data[0].shape[0]), 
                # max_iter=300, verbose=False))
                ('K5N', KNeighborsClassifier(n_neighbors=5)),
-               #('K15N', KNeighborsClassifier(n_neighbors=15)),
-               #('K25N', KNeighborsClassifier(n_neighbors=25))
+               ('K10N', KNeighborsClassifier(n_neighbors=10)),
+               ('K15N', KNeighborsClassifier(n_neighbors=15))
 ] 
 
 
 #pdb.set_trace()
+
 # Do experiment, record data to list
-results = [["application", "num_splits", "num_samples", "test_ratio",
-            "window_duration", "window_overlap", "window_shape",
-            "freq1", "freq2", "stand2", "classifier", "mean_score", "std_dev", "acc", "acc_dev"]]
-# Save results from experiments to dataframe
-
-results_frame = pd.DataFrame(columns=results[0][0:1], dtype=str) 
-
-
-
-#for name, (data_X, data_Y) in app_data_sets.items():
-name = "Concrete Tool Wear"
+# Save results from experiments to list of list of pairs
+results_list = []
 data_X = windowed_audio_data
 data_Y = [wear_classes2ints[label] for label in windowed_audio_labels] 
 
@@ -169,36 +180,56 @@ for ft1 in freq_transforms1:
                                 scoring=scorings, n_jobs=number_parallel_jobs)
 
       # Concat to data frame
-      experiment_data_dict = {results[0][0] : [name],
-                              results[0][1] : [str(number_cross_validations)]}
-      experiment_data_frame = pd.DataFrame(data=experiment_data_dict, dtype=str)
-      results_frame = pd.concat([results_frame, experiment_data_frame], ignore_index=True)
+      dynamic_params_pairs = [("num_samples", [str(len(data_X))]),
+                              ("freq1", [my_pipeline.steps[0][0]]), 
+                              ("freq2", [my_pipeline.steps[1][0]]), 
+                              ("stand2", [my_pipeline.steps[2][0]]),
+                              ("classifier", [my_pipeline.steps[3][0]]),
+                              ("mean_score", [str(scores["test_f1_macro"].mean())]),
+                              ("std_dev", [str(scores["test_f1_macro"].std())]),
+                              ("acc", [str(scores["test_accuracy"].mean())]), 
+                              ("acc_dev", [str(scores["test_accuracy"].std())])]
 
-      results.append([name, str(number_cross_validations), str(len(data_X)), str(my_test_size),
-                      str(window_duration), str(window_overlap), window_shape,
-                      my_pipeline.steps[0][0], my_pipeline.steps[1][0], my_pipeline.steps[2][0],
-                      my_pipeline.steps[3][0], 
-                      str(scores["test_f1_macro"].mean()), str(scores["test_f1_macro"].std()),
-                      str(scores["test_accuracy"].mean()), str(scores["test_accuracy"].std())])
+      # Create data frame from static and dynamic data, append to results dataframe
+      experiment_data_pairs = static_params_pairs + dynamic_params_pairs
+      results_list.append(experiment_data_pairs)
+
+      # Progress UI
       print(".", end='', flush=True)
 
 that_time = time.time()
 print(" Done! Took {0} sec; Saving data...".format(that_time - this_time))
+
 # print list and save to file
-for result in results:
-  print(result)
+#for result in results:
+#  print(result)
+
+# Get list of column names from first entry in results list
+result_columns = [item[0] for item in results_list[0]] 
+
+# Make list of rows as tuples
+result_rows = []
+for res in results_list:
+  names  = [item[0] for item in res] # Unused
+  values = [item[1][0] for item in res] 
+  result_rows.append(values)
+
+results_frame = pd.DataFrame(data=result_rows, columns=result_columns)
 
 print("results frame")
 print(results_frame)
 
-pdb.set_trace()
-
 ## Write file
 os.makedirs('./out', exist_ok=True)
 timestr = time.strftime("%Y%m%d_%H%M%Sresults.csv")
-with open('./out/' + timestr, 'w') as f:
-  for line in results:
-    f.write(','.join(line) + '\n')
+
+#with open('./out/' + timestr, 'w') as f:
+#  for line in results:
+#    f.write(','.join(line) + '\n')
+
+## Write better file
+outfilename = './out/' + "CONCRETE_" + timestr
+results_frame.to_csv(outfilename, index_label=False, index=False) 
 
 print("Have a nice day!")
 
