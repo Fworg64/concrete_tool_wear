@@ -14,6 +14,8 @@ from sklearn.metrics import confusion_matrix, f1_score, make_scorer
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 
+from sklearn.model_selection import GridSearchCV
+
 import pywt
 import numpy as np
 import pandas as pd
@@ -129,13 +131,14 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [('FFT_Rt', FFTMag(1, power='SQRT')),
-                    ('FFT_Mag', FFTMag(1)),
+freq_transforms1 = [#('FFT_Rt', FFTMag(1, power='SQRT')),
+                    #('FFT_Mag', FFTMag(1)),
                     ('FFT_Sq', FFTMag(1, "SQUARE")),
                     ("FreqControl1", None)]
 freq_transforms2 = [
                     ("FreqControl2", None)
                     ]
+
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
                #('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
                # alpha=1e-10, tol=1e-8,
@@ -159,7 +162,6 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
 ] 
 
 
-#pdb.set_trace()
 
 # Do experiment, record data to list
 # Save results from experiments to list of list of pairs
@@ -176,6 +178,26 @@ for ft1 in freq_transforms1:
       cross_val = ShuffleSplit(n_splits=number_cross_validations, test_size=my_test_size, 
                                random_state = 711711)
       my_pipeline = Pipeline([ft1, ft2, sc2, cls])
+
+      params = "None"
+      if (cls[0] == 'rbf_svm'):
+        print("Fitting svm hyper param")
+        C_range = np.logspace(0, 3, 7)
+        gamma_range = np.logspace(-4, -1, 7)
+        param_grid = {"rbf_svm__gamma" : gamma_range, 
+                          "rbf_svm__C" : C_range,
+                      "rbf_svm__class_weight" : ["balanced"]}
+        grid = GridSearchCV(my_pipeline, param_grid=param_grid, cv=cross_val, verbose=1)
+        grid.fit(data_X, data_Y)
+
+        print(
+             "The best parameters are %s with a score of %0.2f"
+             % (grid.best_params_, grid.best_score_)
+        )
+        params = str(grid.best_params_)        
+
+        my_pipeline.set_params(**grid.best_params_)
+
       scores = cross_validate(my_pipeline, data_X, data_Y, cv=cross_val,
                                 scoring=scorings, n_jobs=number_parallel_jobs)
 
@@ -185,6 +207,7 @@ for ft1 in freq_transforms1:
                               ("freq2", [my_pipeline.steps[1][0]]), 
                               ("stand2", [my_pipeline.steps[2][0]]),
                               ("classifier", [my_pipeline.steps[3][0]]),
+                              ("params", [params]),
                               ("mean_score", [str(scores["test_f1_macro"].mean())]),
                               ("std_dev", [str(scores["test_f1_macro"].std())]),
                               ("acc", [str(scores["test_accuracy"].mean())]), 
