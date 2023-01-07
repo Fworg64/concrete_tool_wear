@@ -37,7 +37,7 @@ allowed_overlap = [x/100 for x in range(0, 101, 5)]
 name = "Concrete Tool Wear"
 
 # Computation parameter
-number_parallel_jobs = 8
+number_parallel_jobs = 10
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -45,12 +45,12 @@ window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
-number_cross_validations = 8
+number_cross_validations = 120
 my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 16
+downsample_factor = 8
 
 print("Loading data...")
 this_time = time.time()
@@ -131,8 +131,8 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [#('FFT_Rt', FFTMag(1, power='SQRT')),
-                    #('FFT_Mag', FFTMag(1)),
+freq_transforms1 = [('FFT_Rt', FFTMag(1, power='SQRT')),
+                    ('FFT_Mag', FFTMag(1)),
                     ('FFT_Sq', FFTMag(1, "SQUARE")),
                     ("FreqControl1", None)]
 freq_transforms2 = [
@@ -140,22 +140,22 @@ freq_transforms2 = [
                     ]
 
 classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
-               #('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
-               # alpha=1e-10, tol=1e-8,
-               # hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
-               #                     windowed_audio_data[0].shape[0]), 
-               # max_iter=300, verbose=False)),
-               #('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
-               # alpha=1e-10, tol=1e-8,
-               # hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
-               #                     2*windowed_audio_data[0].shape[0]),
-               # max_iter=300, verbose=False)),
-               #('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
-               # alpha=1e-10, tol=1e-8,
-               # hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
-               #                     2*windowed_audio_data[0].shape[0], 
-               #                     windowed_audio_data[0].shape[0]), 
-               # max_iter=300, verbose=False))
+               ('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
+                                    windowed_audio_data[0].shape[0]), 
+                max_iter=300, verbose=False)),
+               ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+                                    2*windowed_audio_data[0].shape[0]),
+                max_iter=300, verbose=False)),
+               ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
+                alpha=1e-10, tol=1e-8,
+                hidden_layer_sizes=(2*windowed_audio_data[0].shape[0], 
+                                    2*windowed_audio_data[0].shape[0], 
+                                    windowed_audio_data[0].shape[0]), 
+                max_iter=300, verbose=False)),
                ('K5N', KNeighborsClassifier(n_neighbors=5)),
                ('K10N', KNeighborsClassifier(n_neighbors=10)),
                ('K15N', KNeighborsClassifier(n_neighbors=15))
@@ -187,7 +187,7 @@ for ft1 in freq_transforms1:
         param_grid = {"rbf_svm__gamma" : gamma_range, 
                           "rbf_svm__C" : C_range,
                       "rbf_svm__class_weight" : ["balanced"]}
-        grid = GridSearchCV(my_pipeline, param_grid=param_grid, cv=cross_val, verbose=1)
+        grid = GridSearchCV(my_pipeline, param_grid=param_grid, cv=cross_val, verbose=1, n_jobs=number_parallel_jobs)
         grid.fit(data_X, data_Y)
 
         print(
