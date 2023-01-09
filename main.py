@@ -37,7 +37,7 @@ allowed_overlap = [x/100 for x in range(0, 101, 5)]
 name = "Concrete Tool Wear"
 
 # Computation parameter
-number_parallel_jobs = 10
+number_parallel_jobs = 3
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -45,7 +45,7 @@ window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
-number_cross_validations = 120
+number_cross_validations = 8
 my_test_size = 0.5
 
 # Load data
@@ -59,7 +59,6 @@ this_time = time.time()
 audio_fs = int(audio_fs/downsample_factor)
 raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
 
-window_len = int(window_duration*audio_fs)
 
 ## Allow command line overrides
 # Making command line argument for window shape
@@ -93,12 +92,13 @@ if args.window_overlap:
 else: 
       print("windows don't overlap")
 
+window_len = int(args.window_duration*audio_fs)
 ## End command line parsing
 
 static_params_pairs = [ ("name", [name]),
-                        ("window_shape", [window_shape]),
-                        ("window_duration", [window_duration]),
-                        ("window_overlap", [window_overlap]),
+                        ("window_shape", [args.window_shape]),
+                        ("window_duration", [args.window_duration]),
+                        ("window_overlap", [args.window_overlap]),
                         ("window_len", [window_len]),
                         ("number_parallel_jobs", [number_parallel_jobs]),
                         ("number_cross_validations", [number_cross_validations]),
@@ -203,6 +203,7 @@ for ft1 in freq_transforms1:
 
       # Concat to data frame
       dynamic_params_pairs = [("num_samples", [str(len(data_X))]),
+                              ("sample_lens", [data_X[0].shape[0]]),
                               ("freq1", [my_pipeline.steps[0][0]]), 
                               ("freq2", [my_pipeline.steps[1][0]]), 
                               ("stand2", [my_pipeline.steps[2][0]]),
