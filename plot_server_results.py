@@ -50,6 +50,9 @@ print(fmlist)
 print("window len: ")
 print(wllist)
 
+freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
+method_shapes_list = [".", "+", "^"]
+
 
 for downsample in dflist:
   classification_group_members_dict = {
@@ -73,27 +76,48 @@ for downsample in dflist:
     print(plot_frame.columns)
     plot_frame = plot_frame[["mean_score", "std_dev", "acc", "acc_dev", 
                              "window_duration", "classifier", "freq1"]]
-    #plot_frame.plot()
+
+    # Make figure
+    fig, axe = plt.subplots()
+
     data_dict = {}
     # Organize by classifier in family
-    for classifier in classification_group_members_dict[family_method]["names"]:
+    for idx, classifier in enumerate(classification_group_members_dict[family_method]["names"]):
       classifier_frame = plot_frame.loc[plot_frame["classifier"] == classifier]
       # Pull out each frequency method
       data_dict[classifier] = {}
+      metrics = ["mean_score", "std_dev", "acc", "acc_dev"]
       for freq in fmlist:
-        data_dict[classifier][freq] = []
+        data_dict[classifier][freq] = {met: [] for met in metrics}
         # Select value for chosen classifier method and frequency method and window len
         for wlen in wllist:
-          data_dict[classifier][freq].append(
-            classifier_frame[(classifier_frame["freq1"] == freq) 
-            & (classifier_frame["window_duration"] == wlen)]
-          )
+          for met in metrics:
+            data_dict[classifier][freq][met].append(
+              classifier_frame[(classifier_frame["freq1"] == freq) 
+              & (classifier_frame["window_duration"] == wlen)][met].values[0]
+            )
         print(f"Downsampling: {downsample}> For {family_method}: {classifier}, with {freq}:")
-        print(data_dict[classifier][freq])
-# Plot classification with different shape for different hyperparameters
-# Use diferent color for frequncy method
+        print(data_dict[classifier][freq]["mean_score"])
+        # Plot trace
+        
+        # Plot classification with different shape for different hyperparameters
+        # Use diferent color for frequncy method
+        axe.plot(wllist, data_dict[classifier][freq]["mean_score"], 
+                 c=freq_colors_dict[freq], 
+                 linestyle='--')
+        axe.scatter(wllist, data_dict[classifier][freq]["mean_score"], 
+                 label=f"{classifier} with {freq}",
+                 c=freq_colors_dict[freq], 
+                 marker=method_shapes_list[idx])
+        axe.set_title(f"{family_method} with downsampling {downsample}X")
+        axe.set_ylim([0, 1])
+        axe.legend()
+        plt.grid(True)
+ 
+plt.show(block=False)
+input("Press enter to close.")
+
 # Use win_lens as x axis
-plt.show()
 
 
 
