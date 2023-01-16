@@ -7,6 +7,13 @@ import matplotlib.pyplot as plt
 
 import pdb
 
+# Set figures
+fontsize = 20
+plt.rc('font', size=fontsize, family='sans')
+plt.rc('axes', titlesize=fontsize)
+plt.rc('axes', labelsize=fontsize)
+plt.rc('legend', fontsize=fontsize)
+
 # load all data in folder
 
 results_path = './server_results_jan7_2023/'
@@ -28,6 +35,7 @@ downsample_factors = mega_frame.downsample_factor.unique()
 classification_methods = mega_frame.classifier.unique()
 frequency_methods = mega_frame.freq1.unique()
 win_lens = mega_frame.window_duration.unique()
+audio_freqs = mega_frame.audio_fs.unique()
 
 dflist = downsample_factors.tolist()
 dflist.sort(reverse=True)
@@ -41,6 +49,9 @@ fmlist.sort()
 wllist = win_lens.tolist()
 wllist.sort()
 
+aflist = audio_freqs.tolist()
+aflist.sort()
+
 print("downsamplings: ")
 print(dflist)
 print("classification: ")
@@ -49,9 +60,22 @@ print("freq trans : ")
 print(fmlist)
 print("window len: ")
 print(wllist)
+print("audio freqs: ")
+print(aflist)
 
 freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
 method_shapes_list = [".", "+", "^"]
+
+audio_fs_from_dsf_dict = {df:af for df, af in zip(dflist, aflist)}
+family_method_cols_dict = {"svm": 2, "knn": 3, "ffnn": 3}
+method_display_names_dict = {"rbf_svm": "SVM RBF", 
+                             "K5N": "KNN(5)",
+                             "K10N": "KNN(10)",
+                             "K15N": "KNN(15)",
+                             "MLPClass1": "MLP A",
+                             "MLPClass2": "MLP B",
+                             "MLPClass3": "MLP C"}
+family_display_names_dict = {"svm": "SVM", "knn": "KNN", "ffnn": "MLP"}
 
 
 for downsample in dflist:
@@ -97,7 +121,8 @@ for downsample in dflist:
               & (classifier_frame["window_duration"] == wlen)][met].values[0]
             )
         print(f"Downsampling: {downsample}> For {family_method}: {classifier}, with {freq}:")
-        print(data_dict[classifier][freq]["mean_score"])
+        print("Mean F1  : " + str(data_dict[classifier][freq]["mean_score"]))
+        print("Std. dev : " + str(data_dict[classifier][freq]["std_dev"]))
         # Plot trace
         
         # Plot classification with different shape for different hyperparameters
@@ -106,12 +131,15 @@ for downsample in dflist:
                  c=freq_colors_dict[freq], 
                  linestyle='--')
         axe.scatter(wllist, data_dict[classifier][freq]["mean_score"], 
-                 label=f"{classifier} with {freq}",
+                 label=f"{method_display_names_dict[classifier]} with {freq}",
                  c=freq_colors_dict[freq], 
-                 marker=method_shapes_list[idx])
-        axe.set_title(f"{family_method} with downsampling {downsample}X")
+                 marker=method_shapes_list[idx],
+                 s=78)
+        axe.set_title(f"{family_display_names_dict[family_method]} with Fs = {audio_fs_from_dsf_dict[downsample]} Hz [{downsample}X downsample]")
         axe.set_ylim([0, 1])
-        axe.legend()
+        axe.legend(ncol=family_method_cols_dict[family_method] , loc="lower right")
+        axe.set_xlabel("Window Len (s)")
+        axe.set_ylabel("F1 Score, out of 1.00")
         plt.grid(True)
  
 plt.show(block=False)
