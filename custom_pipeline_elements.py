@@ -85,6 +85,29 @@ class FFTMag:
       z = self.recognized_powers[self.power](z)
       return z
 
+class FFTFull:
+  """
+  Class for computing full FFT for real valued signals, returns either magnitude and phase
+  or real and imaginary coefficients depending on if MagPhase=True
+  """
+  def __init__(self, MagPhase=True):
+    self.MagPhase = MagPhase
+
+  def fit(self, x, y=None, **fit_params):
+    return self
+
+  def transform(self, x):
+    z = np.array(x)
+    z = np.fft.rfft(z)
+    if self.MagPhase:
+      z1 = np.abs(z)
+      z2 = np.angle(z)
+    else:
+      z1 = np.real(z)
+      z2 = np.imag(z)
+    z = np.hstack((z1,z2))
+    return z
+
 class WaveletDecomposition:
   """
   Class for computing wavelet coefficients using the specified wavelet basis

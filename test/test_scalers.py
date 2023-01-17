@@ -3,7 +3,7 @@ import unittest
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
-from custom_pipeline_elements import ChannelScaler, SampleScaler, FFTMag, WaveletDecomposition
+from custom_pipeline_elements import ChannelScaler, SampleScaler, FFTMag, FFTFull, WaveletDecomposition
 
 class ScalerTest(unittest.TestCase):
 
@@ -105,6 +105,19 @@ class FFTMagTest(unittest.TestCase):
         tf = FFTMag(4)
         self.assertRaises(IndexError, tf.fit, x)
         #tf.fit(x)
+
+class FFTFullTest(unittest.TestCase):
+
+  def test_FFTFull(self):
+        num_samples = 50
+        num_dims = 100
+        x = np.random.rand(num_samples,num_dims)
+        tf = FFTFull()
+        tf.fit(x)
+        z = tf.transform(x)
+        self.assertEqual(z.shape[0], num_samples)
+        self.assertGreaterEqual(z.shape[1], num_dims)
+
 
 class WaveletTest(unittest.TestCase):
 
