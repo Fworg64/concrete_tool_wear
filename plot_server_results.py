@@ -8,11 +8,13 @@ import matplotlib.pyplot as plt
 import pdb
 
 # Set figures
-fontsize = 20
+fontsize = 30
+legendsize = 20
 plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
-plt.rc('legend', fontsize=fontsize)
+plt.rc('legend', fontsize=legendsize)
+plot_width = 3.6 # pt
 
 # load all data in folder
 
@@ -129,7 +131,7 @@ for downsample in dflist:
         # Use diferent color for frequncy method
         axe.plot(wllist, data_dict[classifier][freq]["mean_score"], 
                  c=freq_colors_dict[freq], 
-                 linestyle='--')
+                 linestyle='--', linewidth=plot_width)
         axe.scatter(wllist, data_dict[classifier][freq]["mean_score"], 
                  label=f"{method_display_names_dict[classifier]} with {freq}",
                  c=freq_colors_dict[freq], 
@@ -140,6 +142,7 @@ for downsample in dflist:
         axe.legend(ncol=family_method_cols_dict[family_method] , loc="lower right")
         axe.set_xlabel("Window Len (s)")
         axe.set_ylabel("F1 Score, out of 1.00")
+        plt.xticks(wllist)
         plt.grid(True)
  
 plt.show(block=False)

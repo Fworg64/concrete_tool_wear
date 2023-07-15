@@ -56,7 +56,12 @@ new_fd = np.array(freq_domain_data_dict["New"])
 mod_fd = np.array(freq_domain_data_dict["Moderate"])
 worn_fd = np.array(freq_domain_data_dict["Worn"])
 
-names = ["New TD", "Mod. TD", "Worn TD", "New FD", "Mod. FD", "Worn FD"]
+names = ["New Time Domain [16x downsample]",
+         "Mod. Time Domain [16x downsample]",
+	 "Worn Time Domain [16x downsample]",
+	 "New Freq. Domain [16x downsample]",
+	 "Mod. Freq. Domain [16x downsample]",
+	 "Worn Freq. Domain [16x downsample]"]
 avgs = {}
 devs = {}
 for val, name in zip([new_td, mod_td, worn_td, new_fd, mod_fd, worn_fd], names):
@@ -75,6 +80,7 @@ plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=fontsize)
+plot_width = 3.6 # pt
 
 fig, axs = plt.subplots(3,2)
 
@@ -84,7 +90,8 @@ for index in range(3):
     avgs[names[index]] + devs[names[index]],
     avgs[names[index]] - devs[names[index]],
     alpha=0.5, color='tab:purple')
-  axs[index][0].plot(time_vals, avgs[names[index]], color='tab:green')
+  axs[index][0].plot(time_vals, avgs[names[index]], 
+	color='tab:green', linewidth=plot_width)
   axs[index][0].set_title(names[index])
   axs[index][0].set_ylim(-6000, 6000)
   axs[index][0].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
@@ -96,12 +103,18 @@ for index in range(3):
     avgs[names[index+3]] + devs[names[index+3]],
     avgs[names[index+3]] - devs[names[index+3]],
     alpha=0.5, color='tab:purple')
-  axs[index][1].plot(freq_vals, avgs[names[index+3]], color='tab:green')
+  axs[index][1].fill_between([50, 250], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([320, 450], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([750, 850], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([1080, 1110], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].plot(freq_vals, avgs[names[index+3]], 
+	color='tab:green', linewidth=plot_width)
   axs[index][1].set_title(names[index+3])
   axs[index][1].set_ylim(0, 3.5e5)
   axs[index][1].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
   axs[index][1].set_xlabel("Freq. (Hz)")
   axs[index][1].set_ylabel("Spectra Magnitude")
+
 
 plt.show(block=False)
 input("Press Enter to close...")
