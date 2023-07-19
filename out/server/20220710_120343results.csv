@@ -1,0 +1,5 @@
+application,num_splits,num_samples,test_ratio,window_duration,window_overlap,window_shape,stand1,fft,stand2,classifier,mean_score,std_dev,acc,acc_dev
+Concrete Tool Wear,100,1424,0.5,0.2,0.5,hamming,ScaleControl1,FFT_Mag,FeatureScaler2,rbf_svm,0.8534886209411772,0.01604136104183823,0.8533286516853932,0.01611715287444357
+Concrete Tool Wear,100,1424,0.5,0.2,0.5,hamming,ScaleControl1,FFT_MagSq,FeatureScaler2,rbf_svm,0.7772814819254524,0.018420165519028666,0.7777106741573033,0.018345573143689415
+Concrete Tool Wear,100,1424,0.5,0.2,0.5,hamming,ScaleControl1,FFT_MagRt,FeatureScaler2,rbf_svm,0.8574371003167899,0.01564498855398532,0.8575702247191007,0.015691533952601103
+Concrete Tool Wear,100,1424,0.5,0.2,0.5,hamming,ScaleControl1,FreqControl,FeatureScaler2,rbf_svm,0.3512098062181898,0.015036487516890504,0.35262640449438204,0.014616535988046632

@@ -1,0 +1,12 @@
+application,num_splits,num_samples,test_ratio,window_duration,window_overlap,window_shape,stand1,fft,stand2,classifier,mean_score,std_dev
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,FFT_Mag,FeatureScaler2,rbf_svm,0.48509870247063913,0.007108642737686491
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,FFT_MagSq,FeatureScaler2,rbf_svm,0.4555832712432054,0.007611841320911915
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,FFT_MagRt,FeatureScaler2,rbf_svm,0.4954066444165187,0.007116836230025014
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,FreqControl,FeatureScaler2,rbf_svm,0.6099688084841715,0.0091908349856279
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,db1, 7 level,FeatureScaler2,rbf_svm,0.5577493261301469,0.007281654974276501
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,db2, 7 level,FeatureScaler2,rbf_svm,0.4998995377390165,0.007027087652477357
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,db3, 7 level,FeatureScaler2,rbf_svm,0.4743630696060167,0.007241682461515949
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,db4, 7 level,FeatureScaler2,rbf_svm,0.4690160363269569,0.007700711102589234
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,biorg 1.3 7 level,FeatureScaler2,rbf_svm,0.5549452810444943,0.007409819726638711
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,biorg 1.5 7 level,FeatureScaler2,rbf_svm,0.5553941313403358,0.007299135687184834
+Concrete Tool Wear,100,14186,0.25,0.2,0.95,boxcar,ScaleControl1,biorg 2.2 7 level,FeatureScaler2,rbf_svm,0.4797193630642272,0.007907447854264777

@@ -45,12 +45,12 @@ window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
-number_cross_validations = 8
+number_cross_validations = 4
 my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 8
+downsample_factor = 16
 
 print("Loading data...")
 this_time = time.time()
@@ -166,10 +166,11 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
 # Do experiment, record data to list
 # Save results from experiments to list of list of pairs
 results_list = []
-data_X = windowed_audio_data
-data_Y = [wear_classes2ints[label] for label in windowed_audio_labels] 
+data_X = np.array(windowed_audio_data)
+data_Y = np.array([wear_classes2ints[label] for label in windowed_audio_labels] )
 
 scorings = ['f1_macro','accuracy']
+confusion_mats = []
 
 for ft1 in freq_transforms1:
  for ft2 in freq_transforms2:
@@ -201,6 +202,15 @@ for ft1 in freq_transforms1:
       scores = cross_validate(my_pipeline, data_X, data_Y, cv=cross_val,
                                 scoring=scorings, n_jobs=number_parallel_jobs)
 
+      # Get confusion matricies for cross validation too
+      for traindex, testdex in cross_val.split(data_X):
+        x_train, x_test = data_X[traindex], data_X[testdex]
+        y_train, y_test = data_Y[traindex], data_Y[testdex]
+        my_pipeline.fit(x_train, y_train)
+        conf_mat = confusion_matrix(y_test, my_pipeline.predict(x_test), normalize="true")
+        confusion_mats.append(conf_mat)
+        print('|', end='', flush=True)
+
       # Concat to data frame
       dynamic_params_pairs = [("num_samples", [str(len(data_X))]),
                               ("sample_lens", [data_X[0].shape[0]]),
@@ -224,6 +234,8 @@ for ft1 in freq_transforms1:
 that_time = time.time()
 print(" Done! Took {0} sec; Saving data...".format(that_time - this_time))
 
+print("conf_mats:")
+print(confusion_mats)
 # print list and save to file
 #for result in results:
 #  print(result)

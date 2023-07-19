@@ -58,7 +58,7 @@ my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 8
+downsample_factor = 16
 
 print("Loading data...")
 this_time = time.time()
