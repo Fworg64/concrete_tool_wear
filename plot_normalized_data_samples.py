@@ -140,10 +140,10 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [('FFT_Rt', FFTMag(1, power='SQRT')),
+freq_transforms1 = [("FreqControl1", None),
                     ('FFT_Mag', FFTMag(1)),
                     ('FFT_Sq', FFTMag(1, "SQUARE")),
-                    ("FreqControl1", None)]
+                    ('FFT_Rt', FFTMag(1, power='SQRT'))]
 
 # Do experiment, record data to list
 # Save results from experiments to list of list of pairs
@@ -195,57 +195,68 @@ print(avgs)
 
 # Plot distribution vectors for each wear level for frequency
 # Set figure sizes
-fontsize = 18
+fontsize = 22
 plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=fontsize)
 plot_width = 3.6 # pt
 
-for idx,ft1 in enumerate(freq_transforms1):
-  fig, axs = plt.subplots(len(wear_list))
+fig1, axs1 = plt.subplots(3,2) # time domain and fftmag
+fig2, axs2 = plt.subplots(3,2) # freq domain sqrt and sq
 
+for idx,ft1 in enumerate(freq_transforms1):
   for index in range(len(wear_list)):
-    # Plot domain
-    print(f"Plotting {names[index]}")
-    domain_vals = np.linspace(0, audio_fs/2, len(avgs[names[index]]))
-    if "Control" in names[index]:
-      domain_vals = np.linspace(0, window_duration, len(avgs[names[index]]))
-      print("DOMAIN CONTROL!")
 
     namedex = idx * len(wear_list) + index
-    axs[index].fill_between(domain_vals,
-      avgs[names[namedex]] + devs[names[namedex]],
-      avgs[names[namedex]] - devs[names[namedex]],
-      alpha=0.5, color='tab:purple')
-    axs[index].plot(domain_vals, avgs[names[namedex]],
-    color='tab:green', linewidth=plot_width)
-    axs[index].set_title(names[namedex])
-  
-  fig.show()
-    #axs[index][0].set_ylim(-6000, 6000)
-    ##axs[index][0].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
-    #axs[index][0].set_xlabel("Time (s)")
-    #axs[index][0].set_ylabel("Amplitude")
 
-#  # Plot freq domain
-#  axs[index][1].fill_between(freq_vals,
-#    avgs[names[index+3]] + devs[names[index+3]],
-#    avgs[names[index+3]] - devs[names[index+3]],
-#    alpha=0.5, color='tab:purple')
-#  axs[index][1].fill_between([50, 250], 0, 500000, color='tab:red', alpha=0.2)
-#  axs[index][1].fill_between([320, 450], 0, 500000, color='tab:red', alpha=0.2)
-#  axs[index][1].fill_between([750, 850], 0, 500000, color='tab:red', alpha=0.2)
-#  axs[index][1].fill_between([1080, 1110], 0, 500000, color='tab:red', alpha=0.2)
-#  axs[index][1].plot(freq_vals, avgs[names[index+3]],
-#  color='tab:green', linewidth=plot_width)
-#  axs[index][1].set_title(names[index+3])
-#  axs[index][1].set_ylim(0, 3.5e5)
-#  axs[index][1].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
-#  axs[index][1].set_xlabel("Freq. (Hz)")
-#  axs[index][1].set_ylabel("Spectra Magnitude")
-#
-#
+    # Plot domain
+    print(f"Plotting {names[namedex]}")
+    domain_vals = np.linspace(0, audio_fs/2, len(avgs[names[namedex]]))
+    xlabel = "Freq (Hz)"
+    if "Control" in names[namedex]:
+      domain_vals = np.linspace(0, window_duration, len(avgs[names[namedex]]))
+      xlabel = "Time (s)"
+      print("DOMAIN CONTROL!")
+
+    if idx in [0,1]:
+      axs1[index][idx].fill_between(domain_vals,
+        avgs[names[namedex]] + devs[names[namedex]],
+        avgs[names[namedex]] - devs[names[namedex]],
+        alpha=0.5, color='tab:purple')
+      axs1[index][idx].plot(domain_vals, avgs[names[namedex]],
+      color='tab:green', linewidth=plot_width)
+      axs1[index][idx].set_title(names[namedex])
+      axs1[index][idx].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
+      axs1[index][idx].set_xlabel(xlabel)
+      axs1[index][idx].set_ylabel("Normalized Mag.")
+      if idx == 1:
+        axs1[index][idx].set_ylim(-1.5, 4.5)
+        axs1[index][idx].fill_between([0, 200], -5, 5, color='tab:red', alpha=0.2)
+        axs1[index][idx].fill_between([400, 600], -5, 5, color='tab:red', alpha=0.2)
+        axs1[index][idx].fill_between([800, 1000], -5, 5, color='tab:red', alpha=0.2)
+        axs1[index][idx].fill_between([1200, 1400], -5, 5, color='tab:red', alpha=0.2)
+        #axs1[index][idx].fill_between([1080, 1110], -5, 5, color='tab:red', alpha=0.2)
+        #axs1[index][idx].fill_between([1200, 1400], -5, 5, color='tab:red', alpha=0.2)
+      else:
+        axs1[index][idx].set_ylim(-1.7, 1.7)
+    else:
+      namedex = idx * len(wear_list) + index
+      axs2[index][idx-2].fill_between(domain_vals,
+        avgs[names[namedex]] + devs[names[namedex]],
+        avgs[names[namedex]] - devs[names[namedex]],
+        alpha=0.5, color='tab:purple')
+      axs2[index][idx-2].plot(domain_vals, avgs[names[namedex]],
+      color='tab:green', linewidth=plot_width)
+      axs2[index][idx-2].set_title(names[namedex])
+      axs2[index][idx-2].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
+      axs2[index][idx-2].set_xlabel(xlabel)
+      axs2[index][idx-2].set_ylabel("Normalized Mag.")
+      axs2[index][idx-2].set_ylim(-1.5, 4.5)
+
+fig1.show()
+fig2.show()
+  
 plt.show(block=False)
 input("Press Enter to close...")
 
