@@ -181,7 +181,7 @@ names = []
 values_list = []
 for ft1 in freq_transforms1:
   for wear in wear_list:
-    names.append(f"{wear} with {ft1[0]}")
+    names.append(f"{wear} with {ft1[0]} [{downsample_factor}x downsample]")
     values_list.append(np.array(transformed_data[wear][ft1[0]]))
 
 avgs = {}
