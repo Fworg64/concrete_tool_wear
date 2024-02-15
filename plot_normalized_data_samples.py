@@ -160,10 +160,11 @@ transformed_data = {label:{} for label in windowed_audio_labels}
 
 for ft1 in freq_transforms1:
   for sc2 in scalings2:
+    # Fit scaler for population data
+    my_pipeline = Pipeline([ft1, sc2])
+    my_pipeline.fit(data_X)
     for wear in wear_list:
-      my_pipeline = Pipeline([ft1, sc2])
-
-      my_pipeline.fit(labelled_data[wear])
+      # Transform each subgroup using population fit
       transformed_data[wear][ft1[0]] = my_pipeline.transform(labelled_data[wear])
 
       # Progress UI
@@ -191,8 +192,8 @@ avgs = {}
 devs = {}
 nums = {}
 for val, name, num in zip(values_list, names, num_samples_list):
-  avgs[name] = np.mean(val, axis=1)
-  devs[name] = np.std(val, axis=1)
+  avgs[name] = np.mean(val, axis=0)
+  devs[name] = np.std(val, axis=0)
   nums[name] = num
 
 print(names)
@@ -204,7 +205,8 @@ def calculate_cont_t_stat(means1, means2, dev1, dev2, num_samples1, num_samples2
   for m1, m2, d1, d2 in zip(means1, means2, dev1, dev2):
     t_stat_list.append(
         (m1 - m2) / np.sqrt(d1 * d1 / num_samples1 + d2 * d2 / num_samples2))
-  t_reject_null = [float(np.abs(t_stat) > 1.960) for t_stat in t_stat_list]
+  two_tails_value = 2.581 # Approximate 99% chance distributions are different for about 940 degrees of freedom 
+  t_reject_null = [float(np.abs(t_stat) > two_tails_value) for t_stat in t_stat_list]
   return t_stat_list, t_reject_null
 
 # Plot distribution vectors for each wear level for frequency
@@ -216,8 +218,9 @@ plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=fontsize)
 plot_width = 3.6 # pt
 
-fig1, axs1 = plt.subplots(3,2) # time domain and fftmag
-fig2, axs2 = plt.subplots(3,2) # freq domain sqrt and sq
+fig1, axs1 = plt.subplots(3,2, sharex="col", sharey=True) # time domain and fftmag
+fig2, axs2 = plt.subplots(3,2, sharex="col", sharey=True) # freq domain sqrt and sq
+fig3, axs3 = plt.subplots(2,1) # t test for distributions, time domain and fft mag
 
 for idx,ft1 in enumerate(freq_transforms1):
   for index in range(len(wear_list)):
@@ -241,54 +244,12 @@ for idx,ft1 in enumerate(freq_transforms1):
       axs1[index][idx].plot(domain_vals, avgs[names[namedex]],
       color='tab:green', linewidth=plot_width)
       axs1[index][idx].set_title(names[namedex])
-      axs1[index][idx].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
-      axs1[index][idx].set_xlabel(xlabel)
+      axs1[index][idx].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
       axs1[index][idx].set_ylabel("Normalized Mag.")
-      if idx == 1:
-        axs1[index][idx].set_ylim(-1.5, 4.5)
-        # Calculate tstat for distributions
-        if wear_list[0] in names[namedex]: # new, compare with others
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex + len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex + len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex + len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex + 2*len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex + 2*len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex + 2*len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
-        if wear_list[1] in names[namedex]: # new, compare with others
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex - len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex - len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex - len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex + len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex + len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex + len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
-        if wear_list[2] in names[namedex]: # new, compare with others
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex - 2*len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex - 2*len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex - 2*len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
-          t_stat, t_reject_null = calculate_cont_t_stat(
-            avgs[names[namedex]], avgs[names[namedex - len(wear_list)]],
-            devs[names[namedex]], devs[names[namedex - len(wear_list)]], 
-            nums[names[namedex]], nums[names[namedex - len(wear_list)]])
-          axs1[index][idx].plot(domain_vals, t_reject_null) 
+      axs1[index][idx].set_ylim(-1.8, 1.8)
+      if index == 2:
+        axs1[index][idx].set_xlabel(xlabel)
 
-        #axs1[index][idx].fill_between([0, 200], -5, 5, color='tab:red', alpha=0.2)
-        #axs1[index][idx].fill_between([400, 600], -5, 5, color='tab:red', alpha=0.2)
-        #axs1[index][idx].fill_between([800, 1000], -5, 5, color='tab:red', alpha=0.2)
-        #axs1[index][idx].fill_between([1200, 1400], -5, 5, color='tab:red', alpha=0.2)
-        ##axs1[index][idx].fill_between([1080, 1110], -5, 5, color='tab:red', alpha=0.2)
-        ##axs1[index][idx].fill_between([1200, 1400], -5, 5, color='tab:red', alpha=0.2)
-      else:
-        axs1[index][idx].set_ylim(-1.7, 1.7)
     else:
       namedex = idx * len(wear_list) + index
       axs2[index][idx-2].fill_between(domain_vals,
@@ -298,13 +259,59 @@ for idx,ft1 in enumerate(freq_transforms1):
       axs2[index][idx-2].plot(domain_vals, avgs[names[namedex]],
       color='tab:green', linewidth=plot_width)
       axs2[index][idx-2].set_title(names[namedex])
-      axs2[index][idx-2].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
-      axs2[index][idx-2].set_xlabel(xlabel)
+      axs2[index][idx-2].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
       axs2[index][idx-2].set_ylabel("Normalized Mag.")
-      axs2[index][idx-2].set_ylim(-1.5, 4.5)
+      axs2[index][idx-2].set_ylim(-1.8, 1.8)
+      if index == 2:
+        axs2[index][idx-2].set_xlabel(xlabel)
+
+    # fig 3
+    if idx in [0,1]:
+        # Calculate tstat for distributions
+        if wear_list[0] in names[namedex]: # new, compare with others
+          # New vs Mod.
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 1]],
+            devs[names[namedex]], devs[names[namedex + 1]], 
+            nums[names[namedex]], nums[names[namedex + 1]])
+          axs3[idx].fill_between(domain_vals, t_reject_null, 
+              step="mid", label=f"New vs {names[namedex + 1]}", color="green",
+              lw=0.00) 
+          print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
+          # New vs Worn
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 2]],
+            devs[names[namedex]], devs[names[namedex + 2]], 
+            nums[names[namedex]], nums[names[namedex + 2]])
+          offset = [t - 2.0 for t in t_reject_null]
+          axs3[idx].fill_between(domain_vals, offset, -2.0, 
+              step="mid", label=f"New vs {names[namedex + 2]}", color="blue",
+              lw=0.00) 
+          print(f"Plotted {names[namedex]} vs {names[namedex + 2]}")
+        if wear_list[1] in names[namedex]: # mod, compare with others
+          # Mod vs Worn
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 1]],
+            devs[names[namedex]], devs[names[namedex + 1]], 
+            nums[names[namedex]], nums[names[namedex + 1]])
+          offset = [t - 4.0 for t in t_reject_null]
+          axs3[idx].fill_between(domain_vals, offset, -4.0, 
+              step="mid", label=f"Mod vs {names[namedex + 1]}", color="brown",
+              lw=0.00) 
+          axs3[idx].set_title(f"Regions with low similarity , p<.01, using {ft1[0]} with {downsample_factor}X Downsampling")
+          ticks = [0.5, -1.5, -3.5]
+          labels = ["New Vs Mod.", "New Vs Worn", "Mod. vs Worn"]
+          axs3[idx].set_yticks(ticks)
+          axs3[idx].set_yticklabels(labels)
+          if idx == 0:
+            axs3[idx].set_xlabel("Time (s)")
+          else:
+            axs3[idx].set_xlabel("Freq. (Hz)")
+          print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
 
 fig1.show()
 fig2.show()
+fig3.show()
   
 ## T test stat for difference in distributions
 
