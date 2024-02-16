@@ -29,7 +29,8 @@ plt.rc('legend', fontsize=legendsize)
 ind = [1,2,3,4]
 fig, ax = plt.subplots(1,1)
 ax.bar(ind, f1_scores, yerr=f1_std_dev, 
-       width=0.8, capsize=65, ecolor="goldenrod", error_kw={"elinewidth":3, "capthick":3})
+       width=0.4, capsize=65, ecolor="#DF2094", error_kw={"elinewidth":2, "capthick":3},
+       color="#2094DF")
 ax.set_title("Support-Vector Machine F1 scores +/- 1 std. dev.")
 
 ax.set_xticks(ind)
