@@ -58,14 +58,15 @@ my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 16
+downsample_factor = 4
 
 print("Loading data...")
 this_time = time.time()
 
 # Load and Downsample, adjust audio_fs
 audio_fs = int(audio_fs/downsample_factor)
-raw_audio_data, metadata = load_audio_files("./raw_audio/classifications.txt", integer_downsample=downsample_factor)
+raw_audio_data, metadata = load_audio_files(
+    "./raw_audio/classifications.txt", integer_downsample=downsample_factor, lpf=False)
 
 
 ## Allow command line overrides
@@ -278,6 +279,7 @@ for idx,ft1 in enumerate(freq_transforms1):
               step="mid", label=f"New vs {names[namedex + 1]}", color="green",
               lw=0.00) 
           print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
+          print(f"Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
           # New vs Worn
           t_stat, t_reject_null = calculate_cont_t_stat(
             avgs[names[namedex]], avgs[names[namedex + 2]],
@@ -288,6 +290,7 @@ for idx,ft1 in enumerate(freq_transforms1):
               step="mid", label=f"New vs {names[namedex + 2]}", color="blue",
               lw=0.00) 
           print(f"Plotted {names[namedex]} vs {names[namedex + 2]}")
+          print(f"Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
         if wear_list[1] in names[namedex]: # mod, compare with others
           # Mod vs Worn
           t_stat, t_reject_null = calculate_cont_t_stat(
@@ -308,6 +311,7 @@ for idx,ft1 in enumerate(freq_transforms1):
           else:
             axs3[idx].set_xlabel("Freq. (Hz)")
           print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
+          print(f"Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
 
 fig1.show()
 fig2.show()

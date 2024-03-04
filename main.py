@@ -37,7 +37,7 @@ allowed_overlap = [x/100 for x in range(0, 101, 5)]
 name = "Concrete Tool Wear"
 
 # Computation parameter
-number_parallel_jobs = 3
+number_parallel_jobs = 4
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -50,7 +50,7 @@ my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 16
+downsample_factor = 4
 
 print("Loading data...")
 this_time = time.time()
