@@ -41,11 +41,11 @@ number_parallel_jobs = 4
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.2 # seconds
+window_duration = 0.05 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
-number_cross_validations = 4
+number_cross_validations = 2
 my_test_size = 0.5
 
 # Load data
