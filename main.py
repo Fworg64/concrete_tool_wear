@@ -247,7 +247,7 @@ for ft1 in freq_transforms1:
       # Progress UI
       print(f". T+: {time.time() - this_time} seconds, {cls[0]} completed.", flush=True)
       print(f"F1 scores: {scores['test_f1_macro'].mean()} +/- {scores['test_f1_macro'].std()}")
-      print(f"Accuracy scores: {scores['test_accuracy'].mean()} +/- {scores['test_f1_accuracy'].std()}")
+      print(f"Accuracy scores: {scores['test_accuracy'].mean()} +/- {scores['test_accuracy'].std()}")
 
  print(f". T+: {time.time() - this_time} seconds, {ft1[0]} completed.", flush=True)
 
