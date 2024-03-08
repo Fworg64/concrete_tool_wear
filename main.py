@@ -241,7 +241,7 @@ for ft1 in freq_transforms1:
       acc_vals_pairs = [(f"acc {idx}", score) for idx, score in enumerate(scores["test_accuracy"])]
 
       # Create data frame from static and dynamic data, append to results dataframe
-      experiment_data_pairs = static_params_pairs + dynamic_params_pairs + f1_vals_pars + acc_vals_pairs
+      experiment_data_pairs = static_params_pairs + dynamic_params_pairs + f1_vals_pairs + acc_vals_pairs
       results_list.append(experiment_data_pairs)
 
       # Progress UI
