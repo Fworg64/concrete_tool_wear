@@ -58,15 +58,23 @@ class FFTMag:
     Transform returns the right side of the FFT magnitude, reducing features roughly by factor of 2
     """
 
-    def __init__(self, num_channels=1, power=None):
+    def __init__(self, num_channels=1, power=None, after=None):
       self.num_channels = num_channels
       self.power = power
+      self.after = after
       self.recognized_powers = {  "SQRT": lambda x : np.sqrt(x), 
                                 "SQUARE": lambda x : np.multiply(x,x),
                                  "OUTER": lambda x : np.multiply(np.expand_dims(x, axis=1), np.expand_dims(x,axis=2)).reshape(x.shape[0],-1),
+                                  "DIFF": lambda x : np.diff(x, n=1),
+                                 "DIFF2": lambda x : np.diff(x, n=2),
+                                 "BOOST": lambda x : np.subtract(x, (1.0 * x.shape[-1]) * np.diff(x, n=2, prepend=0, append=0)),
+                                   "SUM": lambda x : np.cumsum(x, axis=-1),
+                                  "FILT": lambda x : signal.sosfilt(signal.butter(8, 0.15, "lp", output='sos'), x),
                                     None: lambda x : x}
       if power not in self.recognized_powers:
         raise ValueError("power param must be in %s" % (str(self.recognized_powers)))
+      if after not in self.recognized_powers:
+        raise ValueError("after param must be in %s" % (str(self.recognized_powers)))
 
     def fit(self, x, y=None, **fit_params):
       dims = np.shape(x)
@@ -83,6 +91,7 @@ class FFTMag:
       else:
         z = np.abs(np.fft.rfft(z))
       z = self.recognized_powers[self.power](z)
+      z = self.recognized_powers[self.after](z)
       return z
 
 class FFTFull:

@@ -49,7 +49,7 @@ number_parallel_jobs = 3
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.2 # seconds
+window_duration = 0.015 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
@@ -58,7 +58,7 @@ my_test_size = 0.5
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 4
+downsample_factor = 2
 
 print("Loading data...")
 this_time = time.time()
@@ -66,7 +66,8 @@ this_time = time.time()
 # Load and Downsample, adjust audio_fs
 audio_fs = int(audio_fs/downsample_factor)
 raw_audio_data, metadata = load_audio_files(
-    "./raw_audio/classifications.txt", integer_downsample=downsample_factor, lpf=False)
+    "./raw_audio/classifications.txt", 
+    integer_downsample=downsample_factor, lpf=True)
 
 
 ## Allow command line overrides
@@ -124,7 +125,6 @@ static_params_pairs = [ ("name", [name]),
 audio_window = Windowizer(window_maker(args.window_shape, int(args.window_duration*audio_fs)), args.window_overlap)
 windowed_audio_data, windowed_audio_labels = audio_window.windowize(raw_audio_data, metadata)
       
-
 wear_list = ["New", "Moderate", "Worn"]
 wear_classes2ints = {"New":0, "Moderate":1, "Worn":2}
 wear_ints2classes = {v: k for k,v in wear_classes2ints.items()}
@@ -142,9 +142,10 @@ this_time = time.time()
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
 freq_transforms1 = [("FreqControl1", None),
-                    ('FFT_Mag', FFTMag(1)),
-                    ('FFT_Sq', FFTMag(1, "SQUARE")),
-                    ('FFT_Rt', FFTMag(1, power='SQRT'))]
+                    ('FFT_MagFilt', FFTMag(1, power="FILT")),
+                    ('FFT_Mag', FFTMag(1, power=None, after=None)),
+                    ('FFT_MagBoost', FFTMag(1, power="FILT", after="BOOST")),
+]
 
 # Do experiment, record data to list
 # Save results from experiments to list of list of pairs
@@ -206,7 +207,8 @@ def calculate_cont_t_stat(means1, means2, dev1, dev2, num_samples1, num_samples2
   for m1, m2, d1, d2 in zip(means1, means2, dev1, dev2):
     t_stat_list.append(
         (m1 - m2) / np.sqrt(d1 * d1 / num_samples1 + d2 * d2 / num_samples2))
-  two_tails_value = 2.581 # Approximate 99% chance distributions are different for about 940 degrees of freedom 
+  #two_tails_value = 2.581 # Approximate 99% chance distributions are different for about 940 degrees of freedom 
+  two_tails_value = 3.291 # Approximate 99.9% chance distributions are different for about 940 degrees of freedom 
   t_reject_null = [float(np.abs(t_stat) > two_tails_value) for t_stat in t_stat_list]
   return t_stat_list, t_reject_null
 
@@ -247,7 +249,11 @@ for idx,ft1 in enumerate(freq_transforms1):
       axs1[index][idx].set_title(names[namedex])
       axs1[index][idx].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
       axs1[index][idx].set_ylabel("Normalized Mag.")
-      axs1[index][idx].set_ylim(-1.8, 1.8)
+      axs1[index][idx].set_ylim(-2.8, 2.8)
+      axs1[index][idx].grid(True, which="minor")
+      axs1[index][idx].minorticks_on()
+      axs1[index][idx].tick_params(which="minor", bottom=False, left=False)
+      axs1[index][idx].grid(True, which="major", linewidth=2, color='k')
       if index == 2:
         axs1[index][idx].set_xlabel(xlabel)
 
@@ -262,7 +268,11 @@ for idx,ft1 in enumerate(freq_transforms1):
       axs2[index][idx-2].set_title(names[namedex])
       axs2[index][idx-2].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
       axs2[index][idx-2].set_ylabel("Normalized Mag.")
-      axs2[index][idx-2].set_ylim(-1.8, 1.8)
+      axs2[index][idx-2].set_ylim(-2.8, 2.8)
+      axs2[index][idx-2].grid(True, which="minor")
+      axs2[index][idx-2].minorticks_on()
+      axs2[index][idx-2].tick_params(which="minor", bottom=False, left=False)
+      axs2[index][idx-2].grid(True, which="major", linewidth=2, color='k')
       if index == 2:
         axs2[index][idx-2].set_xlabel(xlabel)
 
@@ -306,6 +316,10 @@ for idx,ft1 in enumerate(freq_transforms1):
           labels = ["New Vs Mod.", "New Vs Worn", "Mod. vs Worn"]
           axs3[idx].set_yticks(ticks)
           axs3[idx].set_yticklabels(labels)
+          axs3[idx].grid(True, which="minor", axis='x')
+          axs3[idx].minorticks_on()
+          axs3[idx].tick_params(which="minor", bottom=False, left=False)
+          axs3[idx].grid(True, which="major", axis='x', linewidth=2, color='k')
           if idx == 0:
             axs3[idx].set_xlabel("Time (s)")
           else:
