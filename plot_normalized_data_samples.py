@@ -49,7 +49,7 @@ number_parallel_jobs = 3
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.015 # seconds
+window_duration = 0.03 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
@@ -141,10 +141,11 @@ this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
-freq_transforms1 = [("FreqControl1", None),
-                    ('FFT_MagFilt', FFTMag(1, power="FILT")),
-                    ('FFT_Mag', FFTMag(1, power=None, after=None)),
-                    ('FFT_MagBoost', FFTMag(1, power="FILT", after="BOOST")),
+freq_transforms1 = [
+                    ('FFT_MagFilt50', FFTMag(1, power="FILT50")),
+                    ("FFT_Mag", FFTMag(1, power=None)),
+                    ('FFT_MagFilt15', FFTMag(1, power="FILT15", after=None)),
+                    ('FFT_MagFilt15B20', FFTMag(1, power="FILT15", after="BOOST20")),
 ]
 
 # Do experiment, record data to list
