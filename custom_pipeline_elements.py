@@ -70,6 +70,7 @@ class FFTMag:
                                  "BOOST": lambda x : np.subtract(x, (1.0) * np.diff(x, n=2, prepend=0, append=0)),
                                  "BOOST2": lambda x : np.subtract(x, (2.0) * np.diff(x, n=2, prepend=0, append=0)),
                                  "BOOST10": lambda x : np.subtract(x, (10.0) * np.diff(x, n=2, prepend=0, append=0)),
+                                 "BOOSTm10": lambda x : np.add(x, (10.0) * np.diff(x, n=2, prepend=0, append=0)),
                                  "BOOST20": lambda x : np.subtract(x, (20.0) * np.diff(x, n=2, prepend=0, append=0)),
                                  "BOOST50": lambda x : np.subtract(x, (50.0) * np.diff(x, n=2, prepend=0, append=0)),
                                    "SUM": lambda x : np.cumsum(x, axis=-1),

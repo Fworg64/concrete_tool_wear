@@ -49,7 +49,7 @@ number_parallel_jobs = 3
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.03 # seconds
+window_duration = 0.06 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
@@ -142,8 +142,8 @@ this_time = time.time()
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
 freq_transforms1 = [
-                    ('FFT_MagFilt50', FFTMag(1, power="FILT50")),
                     ("FFT_Mag", FFTMag(1, power=None)),
+                    ('FFT_MagBoost10', FFTMag(1, power="BOOSTm10")),
                     ('FFT_MagFilt15', FFTMag(1, power="FILT15", after=None)),
                     ('FFT_MagFilt15B20', FFTMag(1, power="FILT15", after="BOOST20")),
 ]
@@ -312,7 +312,7 @@ for idx,ft1 in enumerate(freq_transforms1):
           axs3[idx].fill_between(domain_vals, offset, -4.0, 
               step="mid", label=f"Mod vs {names[namedex + 1]}", color="brown",
               lw=0.00) 
-          axs3[idx].set_title(f"Regions with low similarity , p<.01, using {ft1[0]} with {downsample_factor}X Downsampling")
+          axs3[idx].set_title(f"Regions with low similarity , p<.001, using {ft1[0]} with {downsample_factor}X Downsampling")
           ticks = [0.5, -1.5, -3.5]
           labels = ["New Vs Mod.", "New Vs Worn", "Mod. vs Worn"]
           axs3[idx].set_yticks(ticks)
