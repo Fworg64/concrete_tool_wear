@@ -1,6 +1,6 @@
 # This file plots the data used in main.py after it has been normallized
 # and for each pre-processing technique and the time domain control.
-
+# 12 Mar 2024
 
 import pdb
 import time
@@ -49,7 +49,7 @@ number_parallel_jobs = 3
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.06 # seconds
+window_duration = 0.10 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
@@ -142,7 +142,7 @@ this_time = time.time()
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
 freq_transforms1 = [
-                    ("FFT_Mag", FFTMag(1, power=None)),
+                    ("FFT Mag.", FFTMag(1, power=None)),
                     ('FFT_MagBoost10', FFTMag(1, power="BOOSTm10")),
                     ('FFT_MagFilt15', FFTMag(1, power="FILT15", after=None)),
                     ('FFT_MagFilt15B20', FFTMag(1, power="FILT15", after="BOOST20")),
@@ -185,22 +185,27 @@ print(" Done! Took {0} sec; Saving data...".format(that_time - this_time))
 names = []
 values_list = []
 num_samples_list = []
+dim_samples_list = []
 for ft1 in freq_transforms1:
   for wear in wear_list:
     names.append(f"{wear} with {ft1[0]} [{downsample_factor}x downsample]")
     values_list.append(np.array(transformed_data[wear][ft1[0]]))
     num_samples_list.append(values_list[-1].shape[0])
+    dim_samples_list.append(values_list[-1].shape[1])
 
 avgs = {}
 devs = {}
 nums = {}
-for val, name, num in zip(values_list, names, num_samples_list):
+dims = {}
+for val, name, num, dim in zip(values_list, names, num_samples_list, dim_samples_list):
   avgs[name] = np.mean(val, axis=0)
   devs[name] = np.std(val, axis=0)
   nums[name] = num
+  dims[name] = dim
 
-print(names)
-print(nums)
+print("names:", names)
+print("nums:", nums)
+print("dims:", dims)
 #print(avgs)
 
 def calculate_cont_t_stat(means1, means2, dev1, dev2, num_samples1, num_samples2):
@@ -216,18 +221,20 @@ def calculate_cont_t_stat(means1, means2, dev1, dev2, num_samples1, num_samples2
 # Plot distribution vectors for each wear level for frequency
 # Set figure sizes
 fontsize = 22
+legendfontsize = 14 
 plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
-plt.rc('legend', fontsize=fontsize)
-plot_width = 3.6 # pt
+plt.rc('legend', fontsize=legendfontsize)
+plot_width = 0.8 # pt
 
 fig1, axs1 = plt.subplots(3,2, sharex="col", sharey=True) # time domain and fftmag
 fig2, axs2 = plt.subplots(3,2, sharex="col", sharey=True) # freq domain sqrt and sq
 fig3, axs3 = plt.subplots(2,1) # t test for distributions, time domain and fft mag
 
 mosaic_names_list = ["A", "B", "C", "D"]
-fig, axes = plt.subplot_mosaic([["A", "B"], ["A", "C"], ["A", "D"]])
+fig, axes = plt.subplot_mosaic([["B", "A"], ["C", "A"], ["D", "A"]])
+mosaic_leg_loc = ["upper right", "lower right", "lower right"]
 
 for idx,ft1 in enumerate(freq_transforms1):
   for index in range(len(wear_list)):
@@ -243,22 +250,73 @@ for idx,ft1 in enumerate(freq_transforms1):
       xlabel = "Time (s)"
       print("DOMAIN CONTROL!")
 
+    # Fig 4
     if idx == 0:
+      # FFTs, first freq1 value
+      std_err = devs[names[namedex]] / np.sqrt(nums[names[namedex]])
       axes[mosaic_names_list[1 + index]].fill_between(domain_vals,
-        avgs[names[namedex]] + devs[names[namedex]],
-        avgs[names[namedex]] - devs[names[namedex]],
+        avgs[names[namedex]] + std_err,
+        avgs[names[namedex]] - std_err,
         alpha=0.5, color='tab:purple')
       axes[mosaic_names_list[1 + index]].plot(domain_vals, avgs[names[namedex]],
-      color='tab:green', linewidth=plot_width)
-      axes[mosaic_names_list[1 + index]].set_title(names[namedex])
-      axes[mosaic_names_list[1 + index]].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
+        color='tab:green', linewidth=plot_width)
+      axes[mosaic_names_list[1 + index]].set_title(f"{names[namedex]}, N={nums[names[namedex]]}")
+      axes[mosaic_names_list[1 + index]].legend(["Mean", r"$\pm$ 1 Std. Err."], 
+          loc=mosaic_leg_loc[index], ncol=1, prop = {"size":18})
       axes[mosaic_names_list[1 + index]].set_ylabel("Normalized Mag.")
-      axes[mosaic_names_list[1 + index]].set_ylim(-2.8, 2.8)
+      axes[mosaic_names_list[1 + index]].set_ylim(-0.4, 0.4)
       axes[mosaic_names_list[1 + index]].grid(True, which="minor")
       axes[mosaic_names_list[1 + index]].minorticks_on()
       axes[mosaic_names_list[1 + index]].tick_params(which="minor", bottom=False, left=False)
       axes[mosaic_names_list[1 + index]].grid(True, which="major", linewidth=2, color='k')
-    axes["D"].set_xlabel("Frequency (Hz)")
+      axes["D"].set_xlabel("Frequency (Hz)")
+      plt.suptitle("Frequency Spectra Comparison after Normalization")
+      # Comparison graphs
+      # Calculate tstat for distributions
+      if wear_list[0] in names[namedex]: # new, compare with others
+          # New vs Mod.
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 1]],
+            devs[names[namedex]], devs[names[namedex + 1]], 
+            nums[names[namedex]], nums[names[namedex + 1]])
+          axes["A"].fill_between(domain_vals, t_reject_null, 
+              step="mid", label=f"New vs {names[namedex + 1]}", color="green",
+              lw=0.00) 
+          print(f"fig 4 Plotted {names[namedex]} vs {names[namedex + 1]}")
+          print(f"fig 4 Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
+          # New vs Worn
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 2]],
+            devs[names[namedex]], devs[names[namedex + 2]], 
+            nums[names[namedex]], nums[names[namedex + 2]])
+          offset = [t - 2.0 for t in t_reject_null]
+          axes["A"].fill_between(domain_vals, offset, -2.0, 
+              step="mid", label=f"New vs {names[namedex + 2]}", color="blue",
+              lw=0.00) 
+          print(f"fig 4 Plotted {names[namedex]} vs {names[namedex + 2]}")
+          print(f"fig 4 Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
+      if wear_list[1] in names[namedex]: # mod, compare with others
+          # Mod vs Worn
+          t_stat, t_reject_null = calculate_cont_t_stat(
+            avgs[names[namedex]], avgs[names[namedex + 1]],
+            devs[names[namedex]], devs[names[namedex + 1]], 
+            nums[names[namedex]], nums[names[namedex + 1]])
+          offset = [t - 4.0 for t in t_reject_null]
+          axes["A"].fill_between(domain_vals, offset, -4.0, 
+              step="mid", label=f"Mod vs {names[namedex + 1]}", color="brown",
+              lw=0.00) 
+          ticks = [0.5, -1.5, -3.5]
+          labels = ["New Vs Mod.", "New Vs Worn", "Mod. Vs Worn"]
+          axes["A"].set_yticks(ticks)
+          axes["A"].grid(True, which="minor", axis='x')
+          axes["A"].minorticks_on()
+          axes["A"].tick_params(which="minor", bottom=False, left=False)
+          axes["A"].grid(True, which="major", axis='x', linewidth=2, color='k')
+          axes["A"].set_yticklabels(labels, rotation=90, va="center") 
+          axes["A"].set_title(f"Bins with different means, p<.001, {dims[names[namedex]]} bins") 
+          axes["A"].set_xlabel("Frequency (Hz)")
+          print(f"fig 4 Plotted {names[namedex]} vs {names[namedex + 1]}")
+          print(f"fig 4 Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
 
     if idx in [0,1]:
       axs1[index][idx].fill_between(domain_vals,
@@ -309,9 +367,6 @@ for idx,ft1 in enumerate(freq_transforms1):
           axs3[idx].fill_between(domain_vals, t_reject_null, 
               step="mid", label=f"New vs {names[namedex + 1]}", color="green",
               lw=0.00) 
-          axes["A"].fill_between(domain_vals, t_reject_null, 
-              step="mid", label=f"New vs {names[namedex + 1]}", color="green",
-              lw=0.00) 
           print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
           print(f"Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
           # New vs Worn
@@ -321,9 +376,6 @@ for idx,ft1 in enumerate(freq_transforms1):
             nums[names[namedex]], nums[names[namedex + 2]])
           offset = [t - 2.0 for t in t_reject_null]
           axs3[idx].fill_between(domain_vals, offset, -2.0, 
-              step="mid", label=f"New vs {names[namedex + 2]}", color="blue",
-              lw=0.00) 
-          axes["A"].fill_between(domain_vals, offset, -2.0, 
               step="mid", label=f"New vs {names[namedex + 2]}", color="blue",
               lw=0.00) 
           print(f"Plotted {names[namedex]} vs {names[namedex + 2]}")
@@ -338,7 +390,7 @@ for idx,ft1 in enumerate(freq_transforms1):
           axs3[idx].fill_between(domain_vals, offset, -4.0, 
               step="mid", label=f"Mod vs {names[namedex + 1]}", color="brown",
               lw=0.00) 
-          axs3[idx].set_title(f"Regions with low similarity , p<.001, using {ft1[0]} with {downsample_factor}X Downsampling")
+          axs3[idx].set_title(f"Bins with different means, p<.001, using {ft1[0]} and {dims[names[namedex]]} bins") 
           ticks = [0.5, -1.5, -3.5]
           labels = ["New Vs Mod.", "New Vs Worn", "Mod. Vs Worn"]
           axs3[idx].set_yticks(ticks)
@@ -351,17 +403,6 @@ for idx,ft1 in enumerate(freq_transforms1):
             axs3[idx].set_xlabel("Time (s)")
           else:
             axs3[idx].set_xlabel("Freq. (Hz)")
-          axes["A"].fill_between(domain_vals, offset, -4.0, 
-              step="mid", label=f"Mod vs {names[namedex + 1]}", color="brown",
-              lw=0.00) 
-          axes["A"].set_yticks(ticks)
-          axes["A"].grid(True, which="minor", axis='x')
-          axes["A"].minorticks_on()
-          axes["A"].tick_params(which="minor", bottom=False, left=False)
-          axes["A"].grid(True, which="major", axis='x', linewidth=2, color='k')
-          axes["A"].set_yticklabels(labels, rotation=90, va="center") 
-          axes["A"].set_title("Frequencies with differences significant at p < 0.001")
-          axes["A"].set_xlabel("Frequency (Hz)")
           print(f"Plotted {names[namedex]} vs {names[namedex + 1]}")
           print(f"Percent of regions with significant diffs: {sum(t_reject_null)/len(t_reject_null)}")
 

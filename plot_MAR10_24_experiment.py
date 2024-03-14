@@ -4,17 +4,18 @@
 import glob
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 import pdb
 
 # Set figures
 fontsize = 30
-legendsize = 20
+legendsize = 30
 plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=legendsize)
-plot_width = 3.6 # pt
+plot_width = 1.8 # pt
 
 # load all data in folder
 
@@ -40,7 +41,7 @@ win_lens = mega_frame.window_duration.unique()
 audio_freqs = mega_frame.audio_fs.unique()
 
 dflist = downsample_factors.tolist()
-dflist.sort(reverse=True)
+dflist.sort()
 
 cmlist = classification_methods.tolist()
 cmlist.sort(reverse=True)
@@ -65,7 +66,7 @@ print(wllist)
 print("audio freqs: ")
 print(aflist)
 
-downsample_colors_dict = {}
+downsample_color_dict = {2: "#DDCC77", 3: "#88CCEE", 4: "#CC6677"}
 
 freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
 method_shapes_list = [".", "+", "^"]
@@ -73,10 +74,10 @@ method_shapes_list = [".", "+", "^"]
 audio_fs_from_dsf_dict = {df:af for df, af in zip(dflist, aflist)}
 family_method_cols_dict = {"svm": 3, "knn": 3, "ffnn": 3}
 method_display_names_dict = {"rbf_svm": "SVM RBF", 
-                             "K5N": "KNN(5)",
+                             "K5N": "KNN: 5 Neighbors",
 #                             "K10N": "KNN(10)",
 #                             "K15N": "KNN(15)",
-                             "MLPClass1": "MLP A",
+                             "MLPClass1": "MLP: 2-Layer",
 #                             "MLPClass2": "MLP B",
 #                             "MLPClass3": "MLP C"
 }
@@ -107,6 +108,8 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
 
     metrics = ["mean_score", "std_dev", "acc", "acc_dev"]
     data_dict[classification] = {}
+    legend_artists = []
+    legend_labels = []
     for downsample in dflist:
         data_dict[classification][downsample] = {met: [] for met in metrics}
         # Select value for chosen classifier method and frequency method and window len
@@ -116,32 +119,57 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
               plot_frame[(plot_frame["downsample_factor"] == downsample) 
               & (plot_frame["window_duration"] == wlen)][met].values[0]
             )
-        print(f"Downsampling: {downsample}> For {classification}, with {freq}:")
+        print(f"Downsampling: {downsample}> For {classification}, with {freq}")
         print("Mean F1  : " + str(data_dict[classification][downsample]["mean_score"]))
         print("Std. dev : " + str(data_dict[classification][downsample]["std_dev"]))
         # Plot trace
         
         # Plot classification with different shape for different hyperparameters
         # Use diferent color for different downsampling 
-        axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
-                 #c=freq_colors_dict[freq], 
-                 linestyle='--', linewidth=plot_width)
-        axe.scatter(wllist, data_dict[classification][downsample]["mean_score"], 
+        std_dev = np.array(data_dict[classification][downsample]["std_dev"]) 
+        axe.fill_between(wllist,
+          np.array(data_dict[classification][downsample]["mean_score"]) + std_dev,
+          np.array(data_dict[classification][downsample]["mean_score"]) - std_dev,
+          alpha=0.8, 
+          color=downsample_color_dict[downsample],
+          zorder=0,
+        )
+
+        dashes, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
+                 color='k', #downsample_color_dict[downsample],
+                 linestyle='--', linewidth=plot_width,
+                 zorder=10,
+        )
+        outlines, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
+                 color='k',
+                 marker='*',
+                 markersize=20,
+                 linewidth=0,
+                 zorder=20,
+                 )
+        dots, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
                  label=f"{downsample}X downsample",
-                 #c=freq_colors_dict[freq], 
-                 #marker=method_shapes_list[idx],
-                 s=78)
-        axe.set_title(f"{classification} with {freq}")
-        axe.set_ylim([0, 1])
-        axe.legend(ncol=1 , loc="lower right")
-        axe.set_xlabel("Window Len (s)")
-        axe.set_ylabel("F1 Score, out of 1.00")
-        plt.xticks(wllist)
-        axe.grid(True, which="minor", axis='both')
-        axe.minorticks_on()
-        axe.tick_params(which="minor", bottom=False, left=False)
-        axe.grid(True, which="major", axis='both', linewidth=2, color='k')
-        axe.set_axisbelow(True)
+                 color=downsample_color_dict[downsample],
+                 marker='*',
+                 markersize=15,
+                 linewidth=0,
+                 zorder=30,
+                 )
+        legend_artists.append((dashes, outlines, dots))
+        legend_labels.append(f"{downsample}X downsample")
+        
+    plt.suptitle(f"{method_display_names_dict[classification]} Mean F1 Score +/- 1 std. dev.")
+    axe.set_title("70:30 test:train split, N=40")
+    axe.set_ylim([0.5, 1])
+    axe.legend(legend_artists, legend_labels, ncol=1 , loc="lower right")
+    axe.set_xlabel("Window Len (s)")
+    axe.set_ylabel("F1 Score out of 1.00")
+    plt.xticks(wllist)
+    axe.grid(True, which="minor", axis='both')
+    axe.minorticks_on()
+    axe.tick_params(which="minor", bottom=False, left=False)
+    axe.grid(True, which="major", axis='both', linewidth=2, color='k')
+    axe.set_axisbelow(True)
  
 plt.show(block=False)
 input("Press enter to close.")
