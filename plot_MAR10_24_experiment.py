@@ -69,7 +69,8 @@ print(aflist)
 downsample_color_dict = {2: "#DDCC77", 3: "#88CCEE", 4: "#CC6677"}
 
 freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
-method_shapes_list = [".", "+", "^"]
+downsample_shapes_dict = {2: "*", 3: "X", 4: "D"}
+downsample_sizes_dict = {2: 15, 3: 13, 4: 12}
 
 audio_fs_from_dsf_dict = {df:af for df, af in zip(dflist, aflist)}
 family_method_cols_dict = {"svm": 3, "knn": 3, "ffnn": 3}
@@ -142,16 +143,16 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
         )
         outlines, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
                  color='k',
-                 marker='*',
-                 markersize=20,
+                 marker=downsample_shapes_dict[downsample],
+                 markersize=downsample_sizes_dict[downsample] + 4,
                  linewidth=0,
                  zorder=20,
                  )
         dots, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
                  label=f"{downsample}X downsample",
                  color=downsample_color_dict[downsample],
-                 marker='*',
-                 markersize=15,
+                 marker=downsample_shapes_dict[downsample],
+                 markersize=downsample_sizes_dict[downsample],
                  linewidth=0,
                  zorder=30,
                  )
