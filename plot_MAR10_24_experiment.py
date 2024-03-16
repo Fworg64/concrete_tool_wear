@@ -11,7 +11,7 @@ import pdb
 # Set figures
 fontsize = 30
 legendsize = 30
-plt.rc('font', size=fontsize, family='sans')
+plt.rc('font', size=fontsize, family='serif')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=legendsize)
@@ -70,7 +70,7 @@ downsample_color_dict = {2: "#DDCC77", 3: "#88CCEE", 4: "#CC6677"}
 
 freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
 downsample_shapes_dict = {2: "*", 3: "X", 4: "D"}
-downsample_sizes_dict = {2: 15, 3: 13, 4: 12}
+downsample_sizes_dict = {2: 15, 3: 13, 4: 11}
 
 audio_fs_from_dsf_dict = {df:af for df, af in zip(dflist, aflist)}
 family_method_cols_dict = {"svm": 3, "knn": 3, "ffnn": 3}
@@ -149,7 +149,7 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
                  zorder=20,
                  )
         dots, = axe.plot(wllist, data_dict[classification][downsample]["mean_score"], 
-                 label=f"{downsample}X downsample",
+                 label=f"{downsample}X Downsample",
                  color=downsample_color_dict[downsample],
                  marker=downsample_shapes_dict[downsample],
                  markersize=downsample_sizes_dict[downsample],
@@ -163,7 +163,7 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
     axe.set_title("70:30 test:train split, N=40")
     axe.set_ylim([0.5, 1])
     axe.legend(legend_artists, legend_labels, ncol=1 , loc="lower right")
-    axe.set_xlabel("Window Len (s)")
+    axe.set_xlabel("Window Length (s)")
     axe.set_ylabel("F1 Score out of 1.00")
     plt.xticks(wllist)
     axe.grid(True, which="minor", axis='both')

@@ -188,7 +188,7 @@ num_samples_list = []
 dim_samples_list = []
 for ft1 in freq_transforms1:
   for wear in wear_list:
-    names.append(f"{wear} with {ft1[0]} [{downsample_factor}x downsample]")
+    names.append(f"{wear} with {ft1[0]} [Fs={audio_fs/1000} kHz]")
     values_list.append(np.array(transformed_data[wear][ft1[0]]))
     num_samples_list.append(values_list[-1].shape[0])
     dim_samples_list.append(values_list[-1].shape[1])
@@ -222,7 +222,7 @@ def calculate_cont_t_stat(means1, means2, dev1, dev2, num_samples1, num_samples2
 # Set figure sizes
 fontsize = 22
 legendfontsize = 14 
-plt.rc('font', size=fontsize, family='sans')
+plt.rc('font', size=fontsize, family='serif')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=legendfontsize)
@@ -268,9 +268,11 @@ for idx,ft1 in enumerate(freq_transforms1):
       axes[mosaic_names_list[1 + index]].grid(True, which="minor")
       axes[mosaic_names_list[1 + index]].minorticks_on()
       axes[mosaic_names_list[1 + index]].tick_params(which="minor", bottom=False, left=False)
+      axes[mosaic_names_list[1 + index]].tick_params(which="major", bottom=False)
       axes[mosaic_names_list[1 + index]].grid(True, which="major", linewidth=2, color='k')
       axes["D"].set_xlabel("Frequency (Hz)")
-      plt.suptitle("Frequency Spectra Comparison after Normalization")
+      #axes["D"].tick_params(which="major", bottom=True)
+      plt.suptitle(f"Frequency Spectra Comparison after Normalization, 100 Millisecond Sample, {downsample_factor}X Downsample")
       # Comparison graphs
       # Calculate tstat for distributions
       if wear_list[0] in names[namedex]: # new, compare with others
