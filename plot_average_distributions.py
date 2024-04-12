@@ -75,7 +75,7 @@ freq_vals = np.linspace(0, audio_fs/2, len(avgs[names[3]]))
 time_vals = np.linspace(0, window_duration, len(avgs[names[0]]))
 
 # Set figure sizes
-fontsize = 18
+fontsize = 22
 plt.rc('font', size=fontsize, family='sans')
 plt.rc('axes', titlesize=fontsize)
 plt.rc('axes', labelsize=fontsize)
@@ -94,26 +94,29 @@ for index in range(3):
 	color='tab:green', linewidth=plot_width)
   axs[index][0].set_title(names[index])
   axs[index][0].set_ylim(-6000, 6000)
-  axs[index][0].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
+  axs[index][0].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
   axs[index][0].set_xlabel("Time (s)")
   axs[index][0].set_ylabel("Amplitude")
+  axs[index][0].ticklabel_format(axis='y', style='sci', scilimits=(3,3))
 
   # Plot freq domain
   axs[index][1].fill_between(freq_vals,
     avgs[names[index+3]] + devs[names[index+3]],
     avgs[names[index+3]] - devs[names[index+3]],
     alpha=0.5, color='tab:purple')
-  axs[index][1].fill_between([50, 250], 0, 500000, color='tab:red', alpha=0.2)
-  axs[index][1].fill_between([320, 450], 0, 500000, color='tab:red', alpha=0.2)
-  axs[index][1].fill_between([750, 850], 0, 500000, color='tab:red', alpha=0.2)
-  axs[index][1].fill_between([1080, 1110], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([0, 200], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([400, 600], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([800, 1000], 0, 500000, color='tab:red', alpha=0.2)
+  axs[index][1].fill_between([1200, 1400], 0, 500000, color='tab:red', alpha=0.2)
+  #axs[index][1].fill_between([1200, 1400], 0, 500000, color='tab:red', alpha=0.2)
   axs[index][1].plot(freq_vals, avgs[names[index+3]], 
 	color='tab:green', linewidth=plot_width)
   axs[index][1].set_title(names[index+3])
   axs[index][1].set_ylim(0, 3.5e5)
-  axs[index][1].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right")
+  axs[index][1].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", prop = {"size":18})
   axs[index][1].set_xlabel("Freq. (Hz)")
   axs[index][1].set_ylabel("Spectra Magnitude")
+  axs[index][1].ticklabel_format(axis='y', style='sci', scilimits=(3,3))
 
 
 plt.show(block=False)
