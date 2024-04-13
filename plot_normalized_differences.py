@@ -140,10 +140,16 @@ print("Data loaded in {0} sec; performing experiments".format(that_time - this_t
 this_time = time.time()
 # Build pipeline
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
-scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
+normalized = False
+if normalized:
+  scalings2= [("FeatureScaler2", StandardScaler())]
+else:
+  scalings2 = [("ScaleControl2", None)]
+
 freq_transforms1 = [
                     ("FFT Mag.", FFTMag(1, power=None)),
-                    ('FFT_MagBoost10', FFTMag(1, power="BOOSTm10")),
+                    ("TimeControl", None),
+                    #('FFT_MagBoost10', FFTMag(1, power="BOOSTm10")),
                     ('FFT_MagFilt15', FFTMag(1, power="FILT15", after=None)),
                     ('FFT_MagFilt15B20', FFTMag(1, power="FILT15", after="BOOST20")),
 ]
@@ -168,7 +174,7 @@ for ft1 in freq_transforms1:
     my_pipeline.fit(data_X)
     for wear in wear_list:
       # Transform each subgroup using population fit
-      transformed_data[wear][ft1[0]] = my_pipeline.transform(labelled_data[wear])
+      transformed_data[wear][ft1[0]] = np.array(my_pipeline.transform(labelled_data[wear]))
 
       # Progress UI
       print(f"{wear} {ft1[0]} is {transformed_data[wear][ft1[0]].shape}.", flush=True)
@@ -228,7 +234,8 @@ plt.rc('axes', labelsize=fontsize)
 plt.rc('legend', fontsize=legendfontsize)
 plot_width = 0.8 # pt
 
-fig1, axs1 = plt.subplots(3,2, sharex="col", sharey=True) # time domain and fftmag
+fig1, axs1 = plt.subplots(3,2, sharex="col", sharey=False) # time domain and fftmag
+plt.suptitle(f"Frequency Spectra Magnitude and Time Domain, 100 Millisecond Sample, {downsample_factor}X Downsample")
 fig2, axs2 = plt.subplots(3,2, sharex="col", sharey=True) # freq domain sqrt and sq
 fig3, axs3 = plt.subplots(2,1) # t test for distributions, time domain and fft mag
 
@@ -263,8 +270,11 @@ for idx,ft1 in enumerate(freq_transforms1):
       axes[mosaic_names_list[1 + index]].set_title(f"{names[namedex]}, N={nums[names[namedex]]}")
       axes[mosaic_names_list[1 + index]].legend(["Mean", r"$\pm$ 1 Std. Err."], 
           loc=mosaic_leg_loc[index], ncol=1, prop = {"size":18})
-      axes[mosaic_names_list[1 + index]].set_ylabel("Normalized Mag.")
-      axes[mosaic_names_list[1 + index]].set_ylim(-0.4, 0.4)
+      if normalized:
+        axes[mosaic_names_list[1 + index]].set_ylabel("Normalized Mag.")
+        axes[mosaic_names_list[1 + index]].set_ylim(-0.4, 0.4)
+      else:
+        axes[mosaic_names_list[1 + index]].set_ylabel("Magnitude")
       axes[mosaic_names_list[1 + index]].grid(True, which="minor")
       axes[mosaic_names_list[1 + index]].minorticks_on()
       axes[mosaic_names_list[1 + index]].tick_params(which="minor", bottom=False, left=False)
@@ -272,7 +282,10 @@ for idx,ft1 in enumerate(freq_transforms1):
       axes[mosaic_names_list[1 + index]].grid(True, which="major", linewidth=2, color='k')
       axes["D"].set_xlabel("Frequency (Hz)")
       #axes["D"].tick_params(which="major", bottom=True)
-      plt.suptitle(f"Frequency Spectra Comparison after Normalization, 100 Millisecond Sample, {downsample_factor}X Downsample")
+      if normalized:
+        plt.suptitle(f"Frequency Spectra Comparison after Normalization, 100 Millisecond Sample, {downsample_factor}X Downsample")
+      else:
+        plt.suptitle(f"Frequency Spectra Comparison, 100 Millisecond Sample, {downsample_factor}X Downsample")
       # Comparison graphs
       # Calculate tstat for distributions
       if wear_list[0] in names[namedex]: # new, compare with others
@@ -329,8 +342,12 @@ for idx,ft1 in enumerate(freq_transforms1):
       color='tab:green', linewidth=plot_width)
       axs1[index][idx].set_title(names[namedex])
       axs1[index][idx].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
-      axs1[index][idx].set_ylabel("Normalized Mag.")
-      axs1[index][idx].set_ylim(-2.8, 2.8)
+      if normalized:
+        axs1[index][idx].set_ylabel("Normalized Mag.")
+        axs1[index][idx].set_ylim(-2.8, 2.8)
+      else:
+        axs1[index][0].set_ylabel("Magnitude")
+        axs1[index][1].set_ylabel("Amplitude")
       axs1[index][idx].grid(True, which="minor")
       axs1[index][idx].minorticks_on()
       axs1[index][idx].tick_params(which="minor", bottom=False, left=False)
@@ -348,8 +365,11 @@ for idx,ft1 in enumerate(freq_transforms1):
       color='tab:green', linewidth=plot_width)
       axs2[index][idx-2].set_title(names[namedex])
       axs2[index][idx-2].legend(["Mean", r"$\pm$ 1 Std. Dev."], loc="upper right", ncol=2, prop = {"size":18})
-      axs2[index][idx-2].set_ylabel("Normalized Mag.")
-      axs2[index][idx-2].set_ylim(-2.8, 2.8)
+      if normalized:
+        axs2[index][idx-2].set_ylabel("Normalized Mag.")
+        axs2[index][idx-2].set_ylim(-2.8, 2.8)
+      else:
+        axs2[index][idx-2].set_ylabel("Magnitude")
       axs2[index][idx-2].grid(True, which="minor")
       axs2[index][idx-2].minorticks_on()
       axs2[index][idx-2].tick_params(which="minor", bottom=False, left=False)
