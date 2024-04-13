@@ -149,7 +149,8 @@ freq_transforms2 = [
 
 scalings2 = [("FeatureScaler2", StandardScaler())] #, ("ScaleControl2", None)]
 
-classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
+classifiers = [
+               ('rbf_svm', svm.SVC(class_weight='balanced')),
                ('MLPClass1', MLPClassifier(solver='lbfgs', activation='relu', 
                 alpha=1e-10, tol=1e-8,
                 hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
@@ -271,7 +272,7 @@ result_columns = [item[0] for item in results_list[0]]
 result_rows = []
 for res in results_list:
   names  = [item[0] for item in res] # Unused
-  values = [item[1][0] for item in res] 
+  values = [item[1] for item in res] 
   result_rows.append(values)
 
 results_frame = pd.DataFrame(data=result_rows, columns=result_columns)
@@ -279,15 +280,9 @@ results_frame = pd.DataFrame(data=result_rows, columns=result_columns)
 print("results frame")
 print(results_frame)
 
-## Write file
+## Write file with timestamp, make dir if not exist
 os.makedirs('./out', exist_ok=True)
 timestr = time.strftime("%Y%m%d_%H%M%Sresults.csv")
-
-#with open('./out/' + timestr, 'w') as f:
-#  for line in results:
-#    f.write(','.join(line) + '\n')
-
-## Write better file
 outfilename = './out/' + "CONCRETE_" + timestr
 results_frame.to_csv(outfilename, index_label=False, index=False) 
 
@@ -295,7 +290,3 @@ print(f"File saved to {outfilename}")
 
 print("Have a nice day!")
 
-# Score pipelines using default SVM with linear kernal
-# Iterate through material and wear for both sensors
-# and all hyperparams using the chosen window settings
-# also test different test train splits
