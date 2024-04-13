@@ -37,7 +37,7 @@ allowed_overlap = [x/100 for x in range(0, 101, 5)]
 name = "Concrete Tool Wear"
 
 # Computation parameter
-number_parallel_jobs = 8
+number_parallel_jobs = 24
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
@@ -45,12 +45,12 @@ window_duration = 0.015 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
-number_cross_validations = 3
+number_cross_validations = 40
 my_test_size = 0.7
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 2
+downsample_factor = 4
 
 print("Loading data...")
 this_time = time.time()
@@ -134,9 +134,9 @@ this_time = time.time()
 #scalings1 = [("ScaleControl1", None)] # ("FeatureScaler1", StandardScaler())
 
 freq_transforms1 = [('FFT_Mag', FFTMag(1, power=None)),
-                    ('FFT_MagLPF75', FFTMag(1, power="FILT75")),
-                    ('FFT_MagLPF50', FFTMag(1, power="FILT50")),
-                    ('FFT_MagLPF25', FFTMag(1, power="FILT25")),
+#                    ('FFT_MagLPF75', FFTMag(1, power="FILT75")),
+#                    ('FFT_MagLPF50', FFTMag(1, power="FILT50")),
+#                    ('FFT_MagLPF25', FFTMag(1, power="FILT25")),
 #                    ('FFT_MagLPF15B10', FFTMag(1, power="FILT15", after="BOOST10")),
 #                    ('FFT_MagLPF15B20', FFTMag(1, power="FILT15", after="BOOST20")),
 #                    ('FFT_MagLPF15B50', FFTMag(1, power="FILT15", after="BOOST50")),
@@ -155,22 +155,22 @@ classifiers = [('rbf_svm', svm.SVC(class_weight='balanced')),
                 hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
                                     windowed_audio_data[0].shape[0]), 
                 max_iter=900, verbose=False)),
-               ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
-                alpha=1e-10, tol=1e-8,
-                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0]),
-                max_iter=900, verbose=False)),
-               ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
-                alpha=1e-10, tol=1e-8,
-                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0], 
-                                    windowed_audio_data[0].shape[0]), 
-                max_iter=900, verbose=False)),
+#               ('MLPClass2', MLPClassifier(solver='lbfgs', activation='relu', 
+#                alpha=1e-10, tol=1e-8,
+#                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
+#                                    windowed_audio_data[0].shape[0], 
+#                                    windowed_audio_data[0].shape[0]),
+#                max_iter=900, verbose=False)),
+#               ('MLPClass3', MLPClassifier(solver='lbfgs', activation='relu', 
+#                alpha=1e-10, tol=1e-8,
+#                hidden_layer_sizes=(windowed_audio_data[0].shape[0], 
+#                                    windowed_audio_data[0].shape[0], 
+#                                    windowed_audio_data[0].shape[0], 
+#                                    windowed_audio_data[0].shape[0]), 
+#                max_iter=900, verbose=False)),
                ('K5N', KNeighborsClassifier(n_neighbors=5)),
-               ('K10N', KNeighborsClassifier(n_neighbors=10)),
-               ('K15N', KNeighborsClassifier(n_neighbors=15))
+#               ('K10N', KNeighborsClassifier(n_neighbors=10)),
+#               ('K15N', KNeighborsClassifier(n_neighbors=15))
 ] 
 
 
