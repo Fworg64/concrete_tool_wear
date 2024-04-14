@@ -162,7 +162,7 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
     plt.suptitle(f"{method_display_names_dict[classification]} Mean F1 Score +/- 1 std. dev.")
     axe.set_title("70:30 test:train split, N=40")
     axe.set_ylim([0.5, 1])
-    axe.legend(legend_artists, legend_labels, ncol=1 , loc="lower right")
+    axe.legend(legend_artists, legend_labels, ncol=1 , loc=(0.61, 0.03))
     axe.set_xlabel("Window Length (s)")
     axe.set_ylabel("F1 Score out of 1.00")
     plt.xticks(wllist)
