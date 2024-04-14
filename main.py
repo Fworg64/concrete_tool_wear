@@ -37,11 +37,11 @@ allowed_overlap = [x/100 for x in range(0, 101, 5)]
 name = "Concrete Tool Wear"
 
 # Computation parameter
-number_parallel_jobs = 24
+number_parallel_jobs = 40
 
 #default values
 window_shape    = "hamming" #"boxcar" # from scipy.signal.windows
-window_duration = 0.015 # seconds
+window_duration = 0.2 # seconds
 window_overlap  = 0.5 # ratio of overlap [0,1)
 
 # Machine learning sampling hyperparameters #
@@ -50,7 +50,7 @@ my_test_size = 0.7
 
 # Load data
 audio_fs = 44100 # Samples per second for each channel
-downsample_factor = 4
+downsample_factor = 8
 
 print("Loading data...")
 this_time = time.time()
@@ -97,17 +97,17 @@ else:
 window_len = int(args.window_duration*audio_fs)
 ## End command line parsing
 
-static_params_pairs = [ ("name", [name]),
-                        ("window_shape", [args.window_shape]),
-                        ("window_duration", [args.window_duration]),
-                        ("window_overlap", [args.window_overlap]),
-                        ("window_len", [window_len]),
-                        ("number_parallel_jobs", [number_parallel_jobs]),
-                        ("number_cross_validations", [number_cross_validations]),
-                        ("my_test_size", [my_test_size]),
-                        ("audio_fs", [audio_fs]),
-                        ("downsample_factor", [downsample_factor]),
-                        ("load_date_time", [this_time]) ] # All parameters 
+static_params_pairs = [ ("name", name),
+                        ("window_shape", args.window_shape),
+                        ("window_duration", args.window_duration),
+                        ("window_overlap", args.window_overlap),
+                        ("window_len", window_len),
+                        ("number_parallel_jobs", number_parallel_jobs),
+                        ("number_cross_validations", number_cross_validations),
+                        ("my_test_size", my_test_size),
+                        ("audio_fs", audio_fs),
+                        ("downsample_factor", downsample_factor),
+                        ("load_date_time", this_time) ] # All parameters 
 
 ## End default parameters and loading ##
 ## End parameters ##
@@ -225,17 +225,17 @@ for ft1 in freq_transforms1:
         print('|', end='', flush=True)
 
       # Concat to data frame
-      dynamic_params_pairs = [("num_samples", [str(len(data_X))]),
-                              ("sample_lens", [data_X[0].shape[0]]),
-                              ("freq1", [my_pipeline.steps[0][0]]), 
-                              ("freq2", [my_pipeline.steps[1][0]]), 
-                              ("stand2", [my_pipeline.steps[2][0]]),
-                              ("classifier", [my_pipeline.steps[3][0]]),
-                              ("params", [params]),
-                              ("mean_score", [str(scores["test_f1_macro"].mean())]),
-                              ("std_dev", [str(scores["test_f1_macro"].std())]),
-                              ("acc", [str(scores["test_accuracy"].mean())]), 
-                              ("acc_dev", [str(scores["test_accuracy"].std())])]
+      dynamic_params_pairs = [("num_samples", str(len(data_X))),
+                              ("sample_lens", data_X[0].shape[0]),
+                              ("freq1", my_pipeline.steps[0][0]), 
+                              ("freq2", my_pipeline.steps[1][0]), 
+                              ("stand2", my_pipeline.steps[2][0]),
+                              ("classifier", my_pipeline.steps[3][0]),
+                              ("params", params),
+                              ("mean_score", str(scores["test_f1_macro"].mean())),
+                              ("std_dev", str(scores["test_f1_macro"].std())),
+                              ("acc", str(scores["test_accuracy"].mean())), 
+                              ("acc_dev", str(scores["test_accuracy"].std()))]
 
       # Append score values to get accurate distribution
       f1_vals_pairs = [(f"f1 {idx}", score) for idx, score in enumerate(scores["test_f1_macro"])]
