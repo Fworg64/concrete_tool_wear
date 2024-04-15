@@ -66,11 +66,20 @@ print(wllist)
 print("audio freqs: ")
 print(aflist)
 
-downsample_color_dict = {2: "#DDCC77", 3: "#88CCEE", 4: "#CC6677"}
+downsample_color_dict = {
+    2: "#FF0000", 3: "#FFA500", 4: "#FFFF00",
+    8: "#008000", 12: "#0000FF", 16: "#4B0082"
+}
 
 freq_colors_dict = {"FFT_Mag":"red", "FFT_Rt":"blue", "FFT_Sq": "green", "FreqControl1": "orange"}
-downsample_shapes_dict = {2: "*", 3: "X", 4: "D"}
-downsample_sizes_dict = {2: 15, 3: 13, 4: 11}
+downsample_shapes_dict = {
+    2: "*", 3: "X", 4: "D",
+    8: "s", 12: "^", 16: "o",
+}
+downsample_sizes_dict = {
+    2: 15, 3: 13, 4: 11,
+    8: 15, 12: 13, 16: 11,
+}
 
 audio_fs_from_dsf_dict = {df:af for df, af in zip(dflist, aflist)}
 family_method_cols_dict = {"svm": 3, "knn": 3, "ffnn": 3}
@@ -162,7 +171,10 @@ for classification in ["rbf_svm", "K5N", "MLPClass1"]:
     plt.suptitle(f"{method_display_names_dict[classification]} Mean F1 Score +/- 1 std. dev.")
     axe.set_title("70:30 test:train split, N=40")
     axe.set_ylim([0.5, 1])
-    axe.legend(legend_artists, legend_labels, ncol=1 , loc=(0.61, 0.03))
+    if "K5N" in classification:
+      axe.legend(legend_artists, legend_labels, ncol=1 , loc=(0.61, 0.48))
+    else:
+      axe.legend(legend_artists, legend_labels, ncol=1 , loc=(0.61, 0.03))
     axe.set_xlabel("Window Length (s)")
     axe.set_ylabel("F1 Score out of 1.00")
     plt.xticks(wllist)
